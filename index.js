@@ -65,7 +65,7 @@ function Seq (xs) {
                         var errs = [];
                         var args = [];
                         Hash(res).forEach(function (x,i) {
-                            args[i] = x.slice(1);
+                            args[i] = x.length <= 2 ? x[1] : x.slice(1);
                             if (x[0]) errs[i] = x[0];
                         });
                         next(errs, args);
@@ -73,7 +73,9 @@ function Seq (xs) {
                     else {
                         next(
                             Hash.map(res, function (x) { return x[0] }),
-                            Hash.map(res, function (x) { return x.slice(1) })
+                            Hash.map(res, function (x) {
+                                return x.length <= 2 ? x[1] : x.slice(1);
+                            })
                         )
                     }
                 }
