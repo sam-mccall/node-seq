@@ -88,3 +88,20 @@ exports.catchPar = function (assert) {
         assert.ok(caught);
     }, 75);
 };
+
+exports.forEach = function (assert) {
+    var count = 0, done = false;
+    Seq([1,2,3])
+        .forEach(function (x, i) {
+            assert.equal(x - 1, i);
+            count ++;
+        })
+        .seq(function () {
+            assert.equal(count, 3);
+            done = true;
+        })
+    ;
+    setTimeout(function () {
+        assert.ok(done);
+    }, 25);
+};

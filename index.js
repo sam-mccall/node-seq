@@ -97,5 +97,10 @@ function Seq (xs) {
         });
     };
     
+    handlers.forEach = function (acc, cb) {
+        Hash(acc).forEach(cb);
+        next([], acc);
+    };
+    
     return self;
 };
