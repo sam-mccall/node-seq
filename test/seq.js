@@ -160,7 +160,7 @@ exports.parEach = function (assert) {
         .parEach(function (x, i, par) {
             assert.equal(this, par);
             values.push([i,x]);
-            setTimeout(par.bind({}, null, x * 10), 50);
+            setTimeout(par().bind({}, null, x * 10), 50);
         })
         .seq(function (xs) {
             assert.deepEqual(xs, [10,20,30,40])
@@ -181,7 +181,7 @@ exports.parEachCatch = function (assert) {
         .parEach(function (x, i, par) {
             assert.equal(this, par);
             values.push([i,x]);
-            setTimeout(par.bind({}, 'zing' + i), i * 10);
+            setTimeout(par().bind({}, 'zing' + i), i * 10);
         })
         .seq(function (xs) {
             assert.deepEqual(xs, [10,20,30,40])

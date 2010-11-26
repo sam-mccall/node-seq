@@ -163,14 +163,12 @@ function Seq (xs) {
                 var acc = [].slice.call(arguments, 0, -1);
                 if (Array.isArray(acc)) {
                     acc.forEach((function (x, i) {
-                        var par = this();
-                        cb.call(par, x, i, par);
+                        cb.call(this, x, i, this);
                     }).bind(this));
                 }
                 else {
                     Hash(acc).forEach((function (x, i) {
-                        var par = this();
-                        cb.call(par, x, i, par);
+                        cb.call(this, x, i, this);
                     }).bind(this));
                 }
             },
