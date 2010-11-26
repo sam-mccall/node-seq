@@ -133,9 +133,46 @@ function Seq (xs) {
         }
         else {
             Object.keys(acc).reverse().forEach(function (x, i) {
-                actions.unshift({ type : type, cb : cb });
+                actions.unshift({
+                    type : 'seq',
+                    cb : function () {
+                        var that = this;
+                        var that_ = function (err, v) {
+                            res[i] = v;
+                            that(err);
+                        };
+                        cb.call(that_, x, i, that_)
+                    },
+                });
             });
         }
+        next([], acc);
+    };
+    
+    handlers.parEach = function (acc, cb) {
+        actions.unshift({
+            type : 'seq',
+            cb : function () {
+                this(null, [].slice.call(arguments, 0, -1));
+            },
+        });
+        
+        actions.unshift({
+            type : 'par',
+            cb : function () {
+                var acc = [].slice.call(arguments, 0, -1);
+                if (Array.isArray(acc)) {
+                    acc.forEach((function (x, i) {
+                        cb.call(this, x, i, this);
+                    }).bind(this));
+                }
+                else {
+                    Hash(acc).forEach((function (x, i) {
+                        cb.call(this, x, i, this);
+                    }).bind(this));
+                }
+            },
+        });
         next([], acc);
     };
     

@@ -128,9 +128,10 @@ exports.seqEach = function (assert) {
 
 exports.seqEachCatch = function (assert) {
     var count = 0, done = false;
-    var caught = [];
+    var caught = [], values = [];
     Seq([1,2,3,4])
         .seqEach(function (x, i, seq) {
+            values.push([i,x]);
             assert.equal(seq, this);
             assert.equal(x - 1, i);
             count ++;
@@ -148,5 +149,26 @@ exports.seqEachCatch = function (assert) {
         assert.ok(!done);
         assert.equal(count, 3);
         assert.deepEqual(caught, [ 'meow 2' ]);
+        assert.deepEqual(values, [[0,1],[1,2],[2,3]]);
     }, 25);
+};
+
+exports.parEach = function (assert) {
+    var values = [];
+    var done = false;
+    Seq([1,2,3,4])
+        .parEach(function (x, i, par) {
+            assert.equal(this, par);
+            values.push([i,x]);
+            setTimeout(par().bind({}, null, x * 10), 50);
+        })
+        .seq(function (xs) {
+            assert.deepEqual(xs, [10,20,30,40])
+            done = true;
+        })
+    ;
+    setTimeout(function () {
+        assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
+        assert.ok(done);
+    }, 100);
 };
