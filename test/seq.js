@@ -125,3 +125,28 @@ exports.seqEach = function (assert) {
         assert.ok(done);
     }, 25);
 };
+
+exports.seqEachCatch = function (assert) {
+    var count = 0, done = false;
+    var caught = [];
+    Seq([1,2,3,4])
+        .seqEach(function (x, i, seq) {
+            assert.equal(seq, this);
+            assert.equal(x - 1, i);
+            count ++;
+            if (i >= 2) this('meow ' + i)
+            else this(null, x * 10);
+        })
+        .seq(function (xs) {
+            done = true;
+        })
+        .catch(function (err) {
+            caught.push(err);
+        })
+    ;
+    setTimeout(function () {
+        assert.ok(!done);
+        assert.equal(count, 3);
+        assert.deepEqual(caught, [ 'meow 2' ]);
+    }, 25);
+};
