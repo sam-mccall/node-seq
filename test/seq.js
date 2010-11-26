@@ -3,12 +3,14 @@ var Seq = require('seq');
 exports.seq = function (assert) {
     var calls = 0;
     Seq(1)
-        .seq(function (n) {
+        .seq(function (n, that) {
+            assert.equal(this, that);
             assert.equal(n, 1);
             this(null, 2);
             calls++;
         })
-        .seq(function (n) {
+        .seq(function (n, that) {
+            assert.equal(this, that);
             assert.equal(n, 2);
             calls++;
         })
@@ -30,7 +32,9 @@ exports.catch = function (assert) {
             assert.equal(n, 2);
             calls++;
         })
-        .catch(function (err) {
+        .catch(function (err, key, that) {
+            assert.equal(key, 0);
+            assert.equal(that, this);
             assert.equal(err, 'pow!');
             caught = true;
         })

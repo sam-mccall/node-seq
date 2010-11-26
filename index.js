@@ -48,7 +48,7 @@ function Seq (xs) {
     handlers.par = function (acc, cb) {
         var res = {}, keys = {};
         var i = 0;
-        cb.apply(function (key) {
+        var that = function (key) {
             if (key == undefined) key = i++;
             keys[key] = 1;
             
@@ -78,14 +78,16 @@ function Seq (xs) {
                     }
                 }
             });
-        }, acc);
+        };
+        cb.apply(that, acc.concat([that]));
     };
     
     handlers.seq = function (acc, cb) {
-        cb.apply(function () {
+        var that = function () {
             var args = [].slice.call(arguments);
             next(args[0] ? args.slice(0,1) : [], args.slice(1));
-        }, acc);
+        };
+        cb.apply(that, acc.concat([that]));
     };
     
     handlers.catch = function (acc, cb, errs) {
