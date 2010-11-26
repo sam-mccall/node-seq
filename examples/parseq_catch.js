@@ -14,4 +14,7 @@ Seq()
         console.log('Groups: ' + groups[0].trim());
         console.log('This file has ' + src.length + ' bytes');
     })
+    .catch(function (err) {
+        console.error(err.stack ? err.stack : err)
+    })
 ;

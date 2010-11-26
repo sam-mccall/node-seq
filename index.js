@@ -9,7 +9,8 @@ function Seq (xs) {
     function next (errs, acc) {
         var action = actions.shift();
         
-        if (action.type == 'catch') {
+        if (!action) return;
+        else if (action.type == 'catch') {
             if (Hash(errs).length) {
                 handlers.catch(acc, action.cb, errs);
             }
@@ -24,11 +25,9 @@ function Seq (xs) {
     }
     
     setTimeout(function () {
-        self.catch(function (errs) {
+        self.catch(function (err) {
             // default error handler at the end if no catch already fired
-            Hash(errs).forEach(function (err) {
-                console.error(err.stack ? err.stack : err);
-            });
+            console.error(err.stack ? err.stack : err);
         });
         next([], Array.isArray(xs) ? xs : [xs]);
     }, 1);
