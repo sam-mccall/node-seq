@@ -32,18 +32,7 @@ function Seq (xs) {
         next([], Array.isArray(xs) ? xs : [xs]);
     }, 1);
     
-    'par parEach'
-        .split(' ')
-        .forEach(function (type) {
-            self[type] = function (limit, cb) {
-                if (cb === undefined) { cb = limit; limit = 0 }
-                actions.push({ type : type, cb : cb, limit : limit });
-                return self;
-            };
-        })
-    ;
-    
-    'seq forEach seqEach catch'
+    'par seq forEach seqEach catch'
         .split(' ')
         .forEach(function (type) {
             self[type] = function (cb) {
@@ -52,6 +41,12 @@ function Seq (xs) {
             };
         })
     ;
+    
+    self.parEach = function (limit, cb) {
+        if (cb === undefined) { cb = limit; limit = 0 }
+        actions.push({ type : 'parEach', cb : cb, limit : limit });
+        return self;
+    };
     
     var handlers = {};
     
@@ -185,6 +180,7 @@ function Seq (xs) {
         
         actions.unshift({
             type : 'par',
+            limit : action.limit,
             cb : function () {
                 var acc = [].slice.call(arguments, 0, -1);
                 if (Array.isArray(acc)) {
