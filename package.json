@@ -1,0 +1,14 @@
+{
+    "name" : "seq",
+    "version" : "0.0.1",
+    "description" : "Chainable asynchronous flow control with sequential and parallel primitives and pipeline-style error handling",
+    "modules" : {
+        "index" : "./index.js",
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "http://github.com/substack/node-seq.git"
+    },
+    "license" : "MIT/X11",
+    "engine" : ["node >=0.2.0"]
+}
