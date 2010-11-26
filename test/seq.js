@@ -69,8 +69,8 @@ exports.catchPar = function (assert) {
     Seq()
         .par(function (par) {
             assert.equal(par, this);
-            setTimeout(this().bind({}, 'rawr'), 25);
-            setTimeout(this().bind({}, null, 'y'), 50);
+            setTimeout(this('one').bind({}, 'rawr'), 25);
+            setTimeout(this('two').bind({}, null, 'y'), 50);
         })
         .seq(function (x, y) {
             assert.equal(x, 'x');
@@ -79,7 +79,7 @@ exports.catchPar = function (assert) {
         })
         .catch(function (err, key) {
             assert.equal(err, 'rawr');
-            assert.equal(key, 0);
+            assert.equal(key, 'one');
             caught = true;
         })
     ;

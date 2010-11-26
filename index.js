@@ -91,8 +91,8 @@ function Seq (xs) {
     };
     
     handlers.catch = function (acc, cb, errs) {
-        errs.forEach(function (err, key) {
-            handlers.seq([ err, key ], cb);
+        Hash(errs).forEach(function (err, key) {
+            if (err) handlers.seq([ err, key ], cb);
         });
     };
     
