@@ -71,16 +71,26 @@ function Seq (xs) {
                     }
                     else {
                         next(
-                            Hash.map(res, function (x) { return x[0] }),
+                            Hash(res)
+                                .map(function (x) { return x[0] })
+                                .filter(Boolean)
+                                .items
+                            ,
                             Hash.map(res, function (x) {
                                 return x.length <= 2 ? x[1] : x.slice(1);
                             })
-                        )
+                        );
                     }
                 }
             };
         };
-        cb.apply(that, acc.concat([that]));
+        
+        if (Array.isArray(acc)) {
+            cb.apply(that, acc.concat([that]));
+        }
+        else {
+            cb.call(that, acc, that);
+        }
     };
     
     handlers.seq = function (acc, cb) {
@@ -88,7 +98,12 @@ function Seq (xs) {
             var args = [].slice.call(arguments);
             next(args[0] ? args.slice(0,1) : [], args.slice(1));
         };
-        cb.apply(that, acc.concat([that]));
+        if (Array.isArray(acc)) {
+            cb.apply(that, acc.concat([that]));
+        }
+        else {
+            cb.call(that, acc, that);
+        }
     };
     
     handlers.catch = function (acc, cb, errs) {
@@ -174,6 +189,12 @@ function Seq (xs) {
             },
         });
         next([], acc);
+    };
+    
+    self.flatten = function () {
+        return self.seq(function (xs) {
+            this.apply(this, [null].concat(xs));
+        });
     };
     
     return self;
