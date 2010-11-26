@@ -20,7 +20,7 @@ exports.seq = function (assert) {
     }, 75);
 };
 
-exports.catch = function (assert) {
+exports.catchSeq = function (assert) {
     var calls = 0, caught = false;
     Seq(1)
         .seq(function (n) {
@@ -61,5 +61,30 @@ exports.par = function (assert) {
     ;
     setTimeout(function () {
         assert.ok(done);
+    }, 75);
+};
+
+exports.catchPar = function (assert) {
+    var done = false, caught = false;
+    Seq()
+        .par(function (par) {
+            assert.equal(par, this);
+            setTimeout(this().bind({}, 'rawr'), 25);
+            setTimeout(this().bind({}, null, 'y'), 50);
+        })
+        .seq(function (x, y) {
+            assert.equal(x, 'x');
+            assert.equal(y, 'y');
+            done = true;
+        })
+        .catch(function (err, key) {
+            assert.equal(err, 'rawr');
+            assert.equal(key, 0);
+            caught = true;
+        })
+    ;
+    setTimeout(function () {
+        assert.ok(!done);
+        assert.ok(caught);
     }, 75);
 };
