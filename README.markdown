@@ -59,3 +59,11 @@ parseq_catch.js
             console.error(err.stack ? err.stack : err)
         })
     ;
+
+Everytime `this` or `this()` for `.par()` gets executed, its first argument
+should be the error value. This error value propagates downward until it hits a
+`.catch()`. There is an implicit `.catch()` at the bottom of all chains like the
+one in the example immediately above.
+
+Seq also has some nifty asynchronous list operations: `forEach`, `parEach`,
+and `seqEach`.
