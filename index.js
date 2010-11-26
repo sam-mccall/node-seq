@@ -98,7 +98,44 @@ function Seq (xs) {
     };
     
     handlers.forEach = function (acc, cb) {
-        Hash(acc).forEach(cb);
+        if (Array.isArray(acc)) {
+            acc.forEach(cb);
+        }
+        else {
+            Hash(acc).forEach(cb);
+        }
+        next([], acc);
+    };
+    
+    handlers.seqEach = function (acc, cb) {
+        if (Array.isArray(acc)) {
+            var res = [];
+            
+            actions.unshift({
+                type : 'seq',
+                cb : function () { this(null, res) },
+            });
+            
+            acc.reverse().forEach(function (x, ii) {
+                var i = acc.length - ii - 1;
+                actions.unshift({
+                    type : 'seq',
+                    cb : function () {
+                        var that = this;
+                        var that_ = function (err, v) {
+                            res[i] = v;
+                            that(err);
+                        };
+                        cb.call(that_, x, i, that_)
+                    },
+                });
+            });
+        }
+        else {
+            Object.keys(acc).reverse().forEach(function (x, i) {
+                actions.unshift({ type : type, cb : cb });
+            });
+        }
         next([], acc);
     };
     

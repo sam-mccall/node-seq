@@ -105,3 +105,23 @@ exports.forEach = function (assert) {
         assert.ok(done);
     }, 25);
 };
+
+exports.seqEach = function (assert) {
+    var count = 0, done = false;
+    Seq([1,2,3])
+        .seqEach(function (x, i, seq) {
+            assert.equal(seq, this);
+            assert.equal(x - 1, i);
+            count ++;
+            this(null, x * 10);
+        })
+        .seq(function (xs) {
+            assert.equal(count, 3);
+            assert.deepEqual(xs, [10,20,30]);
+            done = true;
+        })
+    ;
+    setTimeout(function () {
+        assert.ok(done);
+    }, 25);
+};
