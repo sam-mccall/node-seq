@@ -44,3 +44,22 @@ exports.catch = function (assert) {
         assert.ok(caught);
     }, 10);
 };
+
+exports.par = function (assert) {
+    var done = false;
+    Seq()
+        .par(function (par) {
+            assert.equal(par, this);
+            setTimeout(this().bind({}, null, 'x'), 25);
+            setTimeout(this().bind({}, null, 'y'), 50);
+        })
+        .seq(function (x, y) {
+            assert.equal(x, 'x');
+            assert.equal(y, 'y');
+            done = true;
+        })
+    ;
+    setTimeout(function () {
+        assert.ok(done);
+    }, 75);
+};
