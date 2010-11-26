@@ -12,7 +12,7 @@ function Seq (xs) {
         if (!action) return;
         else if (action.type == 'catch') {
             if (Hash(errs).length) {
-                handlers.catch(acc, action.cb, errs);
+                handlers.catch(acc, action, errs);
             }
             else next(errs, acc);
         }
@@ -20,7 +20,7 @@ function Seq (xs) {
             next(errs, acc);
         }
         else {
-            handlers[action.type](acc, action.cb);
+            handlers[action.type](acc, action);
         }
     }
     
@@ -32,7 +32,18 @@ function Seq (xs) {
         next([], Array.isArray(xs) ? xs : [xs]);
     }, 1);
     
-    'par seq forEach parEach seqEach catch'
+    'par parEach'
+        .split(' ')
+        .forEach(function (type) {
+            self[type] = function (limit, cb) {
+                if (cb === undefined) { cb = limit; limit = 0 }
+                actions.push({ type : type, cb : cb, limit : limit });
+                return self;
+            };
+        })
+    ;
+    
+    'seq forEach seqEach catch'
         .split(' ')
         .forEach(function (type) {
             self[type] = function (cb) {
@@ -44,7 +55,7 @@ function Seq (xs) {
     
     var handlers = {};
     
-    handlers.par = function (acc, cb) {
+    handlers.par = function (acc, action) {
         var res = {}, keys = {};
         var i = 0;
         var that = function (key) {
@@ -86,43 +97,43 @@ function Seq (xs) {
         };
         
         if (Array.isArray(acc)) {
-            cb.apply(that, acc.concat([that]));
+            action.cb.apply(that, acc.concat([that]));
         }
         else {
-            cb.call(that, acc, that);
+            action.cb.call(that, acc, that);
         }
     };
     
-    handlers.seq = function (acc, cb) {
+    handlers.seq = function (acc, action) {
         var that = function () {
             var args = [].slice.call(arguments);
             next(args[0] ? args.slice(0,1) : [], args.slice(1));
         };
         if (Array.isArray(acc)) {
-            cb.apply(that, acc.concat([that]));
+            action.cb.apply(that, acc.concat([that]));
         }
         else {
-            cb.call(that, acc, that);
+            action.cb.call(that, acc, that);
         }
     };
     
-    handlers.catch = function (acc, cb, errs) {
+    handlers.catch = function (acc, action, errs) {
         Hash(errs).forEach(function (err, key) {
-            if (err) handlers.seq([ err, key ], cb);
+            if (err) handlers.seq([ err, key ], action);
         });
     };
     
-    handlers.forEach = function (acc, cb) {
+    handlers.forEach = function (acc, action) {
         if (Array.isArray(acc)) {
-            acc.forEach(cb);
+            acc.forEach(action.cb);
         }
         else {
-            Hash(acc).forEach(cb);
+            Hash(acc).forEach(action.cb);
         }
         next([], acc);
     };
     
-    handlers.seqEach = function (acc, cb) {
+    handlers.seqEach = function (acc, action) {
         if (Array.isArray(acc)) {
             var res = [];
             
@@ -141,7 +152,7 @@ function Seq (xs) {
                             res[i] = v;
                             that(err);
                         };
-                        cb.call(that_, x, i, that_)
+                        action.cb.call(that_, x, i, that_)
                     },
                 });
             });
@@ -156,7 +167,7 @@ function Seq (xs) {
                             res[i] = v;
                             that(err);
                         };
-                        cb.call(that_, x, i, that_)
+                        action.cb.call(that_, x, i, that_)
                     },
                 });
             });
@@ -164,7 +175,7 @@ function Seq (xs) {
         next([], acc);
     };
     
-    handlers.parEach = function (acc, cb) {
+    handlers.parEach = function (acc, action) {
         actions.unshift({
             type : 'seq',
             cb : function () {
@@ -178,12 +189,12 @@ function Seq (xs) {
                 var acc = [].slice.call(arguments, 0, -1);
                 if (Array.isArray(acc)) {
                     acc.forEach((function (x, i) {
-                        cb.call(this, x, i, this);
+                        action.cb.call(this, x, i, this);
                     }).bind(this));
                 }
                 else {
                     Hash(acc).forEach((function (x, i) {
-                        cb.call(this, x, i, this);
+                        action.cb.call(this, x, i, this);
                     }).bind(this));
                 }
             },
