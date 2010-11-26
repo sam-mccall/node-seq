@@ -9,10 +9,18 @@ function Seq (xs) {
     function next (errs, acc) {
         var action = actions.shift();
         
-        if (Hash(errs).length && action.type != 'catch') {
+        if (action.type == 'catch') {
+            if (Hash(errs).length) {
+                handlers.catch(acc, action.cb, errs);
+            }
+            else next(errs, acc);
+        }
+        else if (Hash(errs).length) {
             next(errs, acc);
         }
-        else handlers[action.type](acc, action.cb, errs);
+        else {
+            handlers[action.type](acc, action.cb);
+        }
     }
     
     setTimeout(function () {
@@ -81,6 +89,10 @@ function Seq (xs) {
     };
     
     handlers.catch = function (acc, cb, errs) {
-        handlers.seq(errs, cb);
+        errs.forEach(function (err, key) {
+            handlers.seq([ err, key ], cb);
+        });
     };
+    
+    return self;
 };
