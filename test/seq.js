@@ -6,7 +6,7 @@ exports.seq = function (assert) {
         .seq(function (n, seq) {
             assert.equal(this, seq);
             assert.equal(n, 1);
-            this(null, 2);
+            setTimeout(function () { seq(null, 2) }, 50);
             calls++;
         })
         .seq(function (n, seq) {
@@ -17,7 +17,7 @@ exports.seq = function (assert) {
     ;
     setTimeout(function () {
         assert.equal(calls, 2);
-    }, 10);
+    }, 75);
 };
 
 exports.catch = function (assert) {

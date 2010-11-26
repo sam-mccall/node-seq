@@ -52,7 +52,7 @@ function Seq (xs) {
             if (key == undefined) key = i++;
             keys[key] = 1;
             
-            return fns.push(function () {
+            return function () {
                 res[key] = [].slice.call(arguments);
                 delete keys[key];
                 
@@ -77,7 +77,7 @@ function Seq (xs) {
                         )
                     }
                 }
-            });
+            };
         };
         cb.apply(that, acc.concat([that]));
     };
