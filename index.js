@@ -8,6 +8,7 @@ function Seq () {
         vars : {},
         args : {},
         stack : [].slice.call(arguments),
+        error : null,
     };
     
     return Chainsaw(function (saw) {
@@ -18,7 +19,7 @@ function Seq () {
 function builder (saw, context) {
     this.context = context;
     
-    function action (key, f) {
+    function action (key, f, g) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
@@ -28,7 +29,7 @@ function builder (saw, context) {
                     .indexOf(true)
                 ;
                 saw.actions.splice(i);
-                context.emitter.emit('result', err);
+                saw.down('catch');
             }
             else {
                 if (key === undefined) {
@@ -38,7 +39,7 @@ function builder (saw, context) {
                     context.vars[key] = args[0];
                     context.args[key] = args;
                 }
-                context.emitter.emit('result', null, args, key);
+                g(args, key);
             }
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
@@ -46,32 +47,34 @@ function builder (saw, context) {
         f.apply(cb, context.stack.concat([cb]));
     }
     
+    var running = 0;
+    
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
-        context.emitter.on('result', function () {
-            context.emitter.removeListener('result', f);
-            saw.next();
-        });
-        action(key, cb);
+        if (running == 0) {
+            action(key, cb, saw.next);
+        }
     };
     
-    var parallel = 0;
     this.par = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
-        parallel ++;
-        context.emitter.on('result', function () {
-            parallel --;
-        });
         
-        action(key, cb);
+        running ++;
+        action(key, cb, function () {
+            running --;
+            if (running == 0) saw.down('seq');
+        });
         saw.next();
     };
     
-    this.join = function (cb) {
-        context.emitter.on('result', function (err) {
-            if (context.parallel == 0) {
-                action(key, cb);
-                saw.next();
+    this.join = function (key, cb) {
+        if (cb === undefined) { cb = key; key = undefined }
+        saw.trap('seq', function () {
+            if (running == 0) {
+                action(key, cb, function () {
+                    context.stack = [];
+                    saw.next();
+                });
             }
         });
     };

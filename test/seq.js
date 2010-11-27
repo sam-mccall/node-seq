@@ -4,14 +4,15 @@ exports.seq = function (assert) {
     var calls = 0;
     Seq(1)
         .seq(function (n, seq) {
-            assert.equal(this, seq);
+            assert.equal(seq, this);
             assert.equal(n, 1);
             setTimeout(function () { seq(null, 2) }, 50);
             calls++;
         })
-        .seq(function (n, seq) {
-            assert.equal(this, seq);
-            assert.equal(n, 2);
+        .seq(function (n, m, seq) {
+            assert.equal(seq, this);
+            assert.equal(n, 1);
+            assert.equal(m, 2);
             calls++;
         })
     ;
