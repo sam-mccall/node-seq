@@ -1,11 +1,6 @@
 var fs = require('fs');
 var exec = require('child_process').exec;
 
-/* Ideas:
-    dependency analysis
-    .seq(key, f) or this.to(key)
-*/
-
 var Seq = require('seq');
 Seq()
     .seq('who', function () {

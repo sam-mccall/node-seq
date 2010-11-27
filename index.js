@@ -3,13 +3,11 @@ var Hash = require('traverse/hash');
 var Chainsaw = require('chainsaw');
 
 module.exports = Seq;
-function Seq (acc) {
+function Seq () {
     var context = {
         vars : {},
         args : {},
-        stack : [],
-        parallel : 0,
-        emitter : new EventEmitter,
+        stack : [].slice.call(arguments),
     };
     
     return Chainsaw(function (saw) {
@@ -18,6 +16,8 @@ function Seq (acc) {
 }
 
 function builder (saw, context) {
+    this.context = context;
+    
     function action (key, f) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
@@ -43,23 +43,24 @@ function builder (saw, context) {
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
         cb.into = function (k) { key = k };
-        f.apply(cb, context.stack);
+        f.apply(cb, context.stack.concat([cb]));
     }
     
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
-        context.emitter.on('result', function f () {
+        context.emitter.on('result', function () {
             context.emitter.removeListener('result', f);
             saw.next();
         });
         action(key, cb);
     };
     
+    var parallel = 0;
     this.par = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
-        context.parallel ++;
+        parallel ++;
         context.emitter.on('result', function () {
-            context.parallel --;
+            parallel --;
         });
         
         action(key, cb);
@@ -73,5 +74,47 @@ function builder (saw, context) {
                 saw.next();
             }
         });
+    };
+    
+    this.catch = function (cb) {
+        if (cb === undefined) { cb = key; key = undefined }
+        context.emitter.on('result', function (err) {
+            if (err) {
+                context.emitter.removeListener('result', f);
+                saw.next();
+            }
+        });
+        action(key, cb);
+    };
+    
+    this.push = function () {
+        context.stack.push.apply(context.stack, arguments);
+        saw.next();
+    };
+    
+    this.extend = function (xs) {
+        context.stack.push.apply(context.stack, xs);
+        saw.next();
+    };
+    
+    this.splice = function () {
+        var args = [].slice.call(arguments);
+        var cb = args.filter(function (arg) {
+            return typeof arg == 'function'
+        })[0];
+        
+        var xs = context.stack.splice.apply(context.stack, arguments);
+        if (cb) saw.nest(cb, xs, context);
+        else saw.next();
+    };
+    
+    this.shift = function (cb) {
+        var x = context.stack.shift();
+        if (cb) saw.nest(cb, x, context);
+        else saw.next();
+    };
+    
+    this.do = function (cb) {
+        saw.nest(cb, context);
     };
 }
