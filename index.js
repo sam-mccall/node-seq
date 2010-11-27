@@ -35,7 +35,7 @@ function builder (saw, context) {
                     context.vars[key] = args[0];
                     context.args[key] = args;
                 }
-                g(args, key);
+                if (g) g(args, key);
             }
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
@@ -74,7 +74,8 @@ function builder (saw, context) {
                 context.stack_ = [];
                 cb.apply(this, arguments);
                 context.stack = context.stack_;
-            }, saw.next);
+                process.nextTick(saw.next);
+            });
         }
         else saw.next();
     };
