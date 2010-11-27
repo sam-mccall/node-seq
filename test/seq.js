@@ -19,6 +19,7 @@ exports.seq = function (assert) {
     }, 75);
 };
 
+/*
 exports.catchSeq = function (assert) {
     var calls = 0, caught = false;
     Seq(1)

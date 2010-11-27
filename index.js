@@ -10,6 +10,7 @@ function Seq () {
         stack : [].slice.call(arguments),
         error : null,
     };
+    context.stack_ = context.stack;
     
     return Chainsaw(function (saw) {
         builder.call(this, saw, context);
@@ -23,7 +24,7 @@ function builder (saw, context) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
-                context.stack = [ [err] ];
+                context.stack_ = [ [err] ];
                 var i = saw.actions
                     .map(function (x) { return x.name == 'catch' })
                     .indexOf(true)
@@ -33,7 +34,7 @@ function builder (saw, context) {
             }
             else {
                 if (key === undefined) {
-                    context.stack.push(args);
+                    context.stack_.push(args);
                 }
                 else {
                     context.vars[key] = args[0];
@@ -53,8 +54,9 @@ function builder (saw, context) {
         if (cb === undefined) { cb = key; key = undefined }
         if (running == 0) {
             action(key, function () {
-                context.stack = [];
+                context.stack_ = [];
                 cb.apply(this, arguments);
+                context.stack = context.stack_;
             }, saw.next);
         }
     };
@@ -72,13 +74,11 @@ function builder (saw, context) {
     
     this.catch = function (cb) {
         if (cb === undefined) { cb = key; key = undefined }
-        context.emitter.on('result', function (err) {
-            if (err) {
-                context.emitter.removeListener('result', f);
-                saw.next();
-            }
-        });
-        action(key, cb);
+        action(key, function () {
+            context.stack_ = [];
+            cb.apply(this, arguments);
+            context.stack = context.stack_;
+        }, saw.next);
     };
     
     this.push = function () {
