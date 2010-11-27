@@ -44,7 +44,7 @@ function builder (saw, context) {
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
         cb.into = function (k) { key = k };
-        f.apply(cb, context.stack.concat([cb]));
+        f.apply(cb, [cb].concat(context.stack));
     }
     
     var running = 0;
@@ -52,7 +52,10 @@ function builder (saw, context) {
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
         if (running == 0) {
-            action(key, cb, saw.next);
+            action(key, function () {
+                context.stack = [];
+                cb.apply(this, arguments);
+            }, saw.next);
         }
     };
     
@@ -65,18 +68,6 @@ function builder (saw, context) {
             if (running == 0) saw.down('seq');
         });
         saw.next();
-    };
-    
-    this.join = function (key, cb) {
-        if (cb === undefined) { cb = key; key = undefined }
-        saw.trap('seq', function () {
-            if (running == 0) {
-                action(key, cb, function () {
-                    context.stack = [];
-                    saw.next();
-                });
-            }
-        });
     };
     
     this.catch = function (cb) {
