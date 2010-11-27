@@ -44,7 +44,7 @@ function builder (saw, context) {
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
         cb.into = function (k) { key = k };
-        f.apply(cb, [cb].concat(context.stack));
+        f.apply(cb, context.stack);
     }
     
     var running = 0;
