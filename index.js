@@ -12,9 +12,13 @@ function Seq () {
     };
     context.stack_ = context.stack;
     
-    return Chainsaw(function (saw) {
+    var ch = Chainsaw(function (saw) {
         builder.call(this, saw, context);
     });
+    ch.catch(function (err) {
+        console.error(err.stack ? err.stack : err)
+    });
+    return ch;
 }
 
 function builder (saw, context) {
@@ -47,6 +51,7 @@ function builder (saw, context) {
     
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
+console.dir({ running : running });
         if (running == 0) {
             action(key, function () {
                 context.stack_ = [];
@@ -62,7 +67,11 @@ function builder (saw, context) {
         running ++;
         action(key, cb, function () {
             running --;
-            if (running == 0) saw.down('seq');
+            if (running == 0) {
+                console.log(saw.step);
+                console.dir(saw.actions);
+                saw.down('seq');
+            }
         });
         saw.next();
     };

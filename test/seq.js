@@ -60,26 +60,29 @@ exports.catchSeq = function (assert) {
     ;
 };
 
-/*
 exports.par = function (assert) {
-    var done = false;
+    var to = setTimeout(function () {
+        assert.fail('seq never fired');
+    }, 75);
+    
     Seq()
-        .par(function (par) {
-            assert.equal(par, this);
-            setTimeout(this().bind({}, null, 'x'), 25);
-            setTimeout(this().bind({}, null, 'y'), 50);
+        .par(function () {
+            var seq = this;
+            setTimeout(function () { seq(null, 'x') }, 50);
+        })
+        .par(function () {
+            var seq = this;
+            setTimeout(function () { seq(null, 'y') }, 25);
         })
         .seq(function (x, y) {
             assert.equal(x, 'x');
             assert.equal(y, 'y');
-            done = true;
+            cleartimeout(to);
         })
     ;
-    setTimeout(function () {
-        assert.ok(done);
-    }, 75);
 };
 
+/*
 exports.catchPar = function (assert) {
     var done = false, caught = false;
     Seq()
