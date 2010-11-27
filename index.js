@@ -24,12 +24,7 @@ function builder (saw, context) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
-                context.stack_ = [ [err] ];
-                var i = saw.actions
-                    .map(function (x) { return x.name == 'catch' })
-                    .indexOf(true)
-                ;
-                saw.actions.splice(i);
+                context.error = err;
                 saw.down('catch');
             }
             else {
@@ -73,12 +68,15 @@ function builder (saw, context) {
     };
     
     this.catch = function (cb) {
-        if (cb === undefined) { cb = key; key = undefined }
-        action(key, function () {
-            context.stack_ = [];
-            cb.apply(this, arguments);
-            context.stack = context.stack_;
-        }, saw.next);
+        if (context.error) {
+            context.stack = [ [context.error] ];
+            action(undefined, function () {
+                context.stack_ = [];
+                cb.apply(this, arguments);
+                context.stack = context.stack_;
+            }, saw.next);
+        }
+        else saw.next();
     };
     
     this.push = function () {

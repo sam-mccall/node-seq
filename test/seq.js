@@ -25,30 +25,39 @@ exports.seq = function (assert) {
     ;
 };
 
-/*
 exports.catchSeq = function (assert) {
-    var calls = 0, caught = false;
+    var to = setTimeout(function () {
+        assert.fail('never caught the error');
+    }, 50);
+    
+    var tf = setTimeout(function () {
+        assert.fail('final action never executed');
+    }, 50);
+    
+    var calls = {};
     Seq(1)
         .seq(function (n) {
             assert.equal(n, 1);
+            calls.before = true;
             this('pow!');
-            calls++;
+            calls.after = true;
         })
         .seq(function (n) {
             assert.equal(n, 2);
-            calls++;
+            calls.next = true;
         })
-        .catch(function (err, key, seq) {
-            assert.equal(key, 0);
-            assert.equal(seq, this);
+        .catch(function (err) {
             assert.equal(err, 'pow!');
-            caught = true;
+            assert.ok(calls.before);
+            assert.ok(!calls.after);
+            assert.ok(!calls.next);
+            clearTimeout(to);
+        })
+        .do(function () {
+            assert.ok(calls.after);
+            clearTimeout(tf);
         })
     ;
-    setTimeout(function () {
-        assert.equal(calls, 1);
-        assert.ok(caught);
-    }, 10);
 };
 
 /*
