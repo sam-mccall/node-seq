@@ -1,16 +1,23 @@
 var fs = require('fs');
 var exec = require('child_process').exec;
 
+/* Ideas:
+    dependency analysis
+    .seq(key, f) or this.to(key)
+*/
+
 var Seq = require('seq');
 Seq()
-    .seq(function () {
-        exec('whoami', this);
+    .seq('who', function () {
+        exec('whoami', this)
     })
-    .par(function (who) {
-        exec('groups ' + who, this());
-        fs.readFile(__filename, 'ascii', this());
+    .par(function () {
+        exec('groups ' + this.vars.who, this);
     })
-    .seq(function (groups, src) {
+    .par(function () {
+        fs.readFile(__filename, 'ascii', this);
+    })
+    .join(function (groups, src) {
         console.log('Groups: ' + groups[0].trim());
         console.log('This file has ' + src.length + ' bytes');
     })

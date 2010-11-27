@@ -88,3 +88,18 @@ one in the example immediately above.
 
 Seq also has some nifty asynchronous list operations: `forEach`, `parEach`,
 and `seqEach`.
+
+Installation
+============
+
+With [npm](http://github.com/isaacs/npm), just do:
+    npm install seq
+
+or clone this project on github:
+
+    git clone http://github.com/substack/node-seq.git
+
+To run the tests with [expresso](http://github.com/visionmedia/expresso),
+just do:
+
+    expresso
