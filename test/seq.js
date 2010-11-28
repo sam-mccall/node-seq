@@ -4,7 +4,6 @@ exports.seq = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never got to the end of the chain');
     }, 50);
-    var calls = 0;
     
     Seq(1)
         .seq(function (n) {
@@ -12,14 +11,10 @@ exports.seq = function (assert) {
             var seq = this;
             setTimeout(function () { seq(null, 2) }, 25);
             assert.eql(this.stack, [n]);
-            calls++;
         })
         .seq(function (n) {
             assert.equal(n, 2);
             assert.eql(this.stack, [n]);
-            
-            calls++;
-            assert.equal(calls, 2);
             clearTimeout(to);
         })
     ;
