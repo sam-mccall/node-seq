@@ -169,6 +169,21 @@ function builder (saw, xs) {
         context.stack = xs;
     };
     
+    this.parMap = function (limit, cb) {
+        var res = [];
+        var len = context.stack.length;
+        if (cb === undefined) { cb = limit; limit = len }
+        
+        this.parEach(limit, function (x, i) {
+            var self = (function () {
+                res[i] = arguments[1];
+                if (i == len - 1) context.stack = res;
+                this.apply(this, arguments);
+            }).bind(this);
+            cb.apply(self, arguments);
+        });
+    };
+    
     this.push = function () {
         context.stack.push.apply(context.stack, arguments);
         saw.next();

@@ -246,6 +246,34 @@ exports.parEachLimited = function (assert) {
         })
         .seq(function () {
             clearTimeout(to);
+            assert.eql(values,
+                [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10]]
+            );
+        })
+    ;
+};
+
+exports.parMap = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 500);
+    
+    var running = 0;
+    var values = [];
+    Seq(1,2,3,4,5,6,7,8,9,10)
+        .parMap(3, function (x, i) {
+            running ++;
+            
+            assert.ok(running <= 3);
+            
+            setTimeout((function () {
+                running --;
+                this(null, x * 10);
+            }).bind(this), 10);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.eql(this.stack, [10,20,30,40,50,60,70,80,90,100]);
         })
     ;
 };
