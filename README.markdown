@@ -288,5 +288,5 @@ just do:
 Dependencies
 ------------
 
-This module uses [chainsaw](http://github.com/substack/node-chainsaw.git)
+This module uses [chainsaw](http://github.com/substack/node-chainsaw)
 When you `npm install seq` this dependency will automatically be installed.
