@@ -4,8 +4,39 @@ Seq
 Seq is an asynchronous flow control library with a chainable interface for
 sequential and parallel actions. Even the error handling is chainable.
 
+Each action in the chain operates on a stack of values.
+There is also a variables hash for storing values by name.
+
 Examples
 ========
+
+stat_all.js
+-----------
+
+    var fs = require('fs');
+    var Hash = require('traverse/hash');
+    var Seq = require('seq');
+    
+    Seq()
+        .seq(function () {
+            fs.readdir(__dirname, this);
+        })
+        .flatten()
+        .parEach(function (file) {
+            fs.stat(__dirname + '/' + file, this.into(file));
+        })
+        .seq(function () {
+            var sizes = Hash.map(this.vars, function (s) { return s.size })
+            console.dir(sizes);
+        })
+    ;
+
+Output:
+
+    { 'parseq.js': 469
+    , 'stat_all.js': 404
+    , 'parseq_catch.js': 565
+    }
 
 parseq.js
 ---------
@@ -24,8 +55,8 @@ parseq.js
         .par(function () {
             fs.readFile(__filename, 'ascii', this);
         })
-        .seq(function (groups, src) {
-            console.log('Groups: ' + groups[0].trim());
+        .seq(function (who, groups, src) {
+            console.log('Groups: ' + groups.trim());
             console.log('This file has ' + src.length + ' bytes');
         })
     ;
@@ -42,10 +73,202 @@ handler looks like this:
         console.error(err.stack ? err.stack : err)
     })
 
-Everytime `this` or `this()` for `.par()` gets executed, its first argument
-should be the error value. This error value propagates downward until it hits a
-`.catch()`. There is an implicit `.catch()` at the bottom of all chains like the
-one in the example immediately above.
+Methods
+=======
+
+Each method executes callbacks with a context (its `this`) described in the next
+section.
+
+Whenever `this()` is called with a non-falsy first argument, the error value
+propagates down to the first `catch` it sees, skipping over all actions in
+between. There is an implicit `catch` at the end of all chains that prints the
+error stack if available and otherwise just prints the error.
+
+Seq()
+-----
+Seq(x, y...)
+------------
+
+The constructor function creates a new `Seq` chain with the methods described
+below. The optional arguments given become the new context stack.
+
+seq(cb)
+-------
+seq(key, cb)
+------------
+
+This eponymous function executes actions sequentially.
+Once all running parallel actions are finished executing,
+the supplied callback is `apply()`'d with the context stack.
+
+To execute the next action in the chain, call `this()`. The first
+argument must be the error value. The stack for the next action in the chain
+will be set to the second argument. Further arguments are available in
+`this.args`.
+
+If `key` is specified, the result from the second argument goes to
+`this.vars[key]` instead of the stack.
+
+par(cb)
+-------
+par(cb, key)
+------------
+
+Use `par` to execute actions in parallel.
+Chain multiple parallel actions together and collect all the responses in a
+sequential operation like `seq`.
+
+Each parallel action runs immediately and pushes its value onto the stack in the
+order in which the actions appear in the chain when `this()` is called. Like in
+`seq`, the first argument to `this()` should be the error value and the second
+will get pushed to the stack. Further arguments are available in `this.args`.
+
+If `key` is specified, the result from the second argument goes to
+`this.vars[key]` instead of the stack.
+
+catch(cb)
+---------
+
+Catch errors. Whenever a function calls `this` with a non-falsy first argument,
+the message propagates down the chain to the first `catch` it sees.
+The callback `cb` fires with the error object as its first argument and the key
+that the action that caused the error was populating, which may be undefined.
+
+`catch` is a sequential action and further actions may appear after a `catch` in
+a chain. If the execution reaches a `catch` in a chain and no error has occured,
+the `catch` is skipped over.
+
+forEach(cb)
+-----------
+
+Execute each action in the stack under the context of the chain object.
+`forEach` does not wait for any of the actions to finish and does not itself
+alter the stack, but the callback may alter the stack itself by modifying
+`this.stack`.
+
+The callback is executed `cb(x,i)` where `x` is the element and `i` is the
+index. 
+
+`forEach` is a sequential operation like `seq` and won't run until all pending
+parallel requests yield results.
+
+seqEach(cb)
+-----------
+
+Like `forEach`, call `cb` for each element on the stack, but unlike `forEach`,
+`seqEach` waits for the callback to yield with `this` before moving on to the
+next element in the stack.
+
+The callback is executed `cb(x,i)` where `x` is the element and `i` is the
+index. 
+
+If `this()` is supplied non-falsy error, the error propagates downward but any
+other arguments are ignored. `seqEach` does not modify the stack itself.
+
+parEach(cb)
+-----------
+parEach(limit, cb)
+------------------
+
+Like `forEach`, calls cb for each element in the stack and doesn't wait for the
+callback to yield a result with `this()` before moving on to the next iteration.
+Unlike `forEach`, `parEach` waits for all actions to call `this()` before moving
+along to the next action in the chain.
+
+The callback is executed `cb(x,i)` where `x` is the element and `i` is the
+index. 
+
+`parEach` does not modify the stack itself and errors supplied to `this()`
+propagate.
+
+Optionally, if limit is supplied to `parEach`, at most `limit` callbacks will be
+active at a time.
+
+seqMap(cb)
+----------
+
+Like `seqEach`, but collect the values supplied to `this` and set the stack to
+these values.
+
+parMap(cb)
+----------
+parMap(limit, cb)
+-----------------
+
+Like `parEach`, but collect the values supplied to `this` and set the stack to
+these values.
+
+do(cb)
+------
+Create a new nested context. `cb`'s first argument is the previous context.
+
+flatten()
+---------
+
+Recursively flatten all the arrays in the stack.
+
+push(x, y...)
+-------------
+
+Push values onto the stack when this action executes.
+
+extend([x,y...])
+----------------
+
+Like `push`, but takes an array. This is like python's `[].extend()`.
+
+splice(...)
+-----------
+
+Splice the stack.
+
+shift()
+-------
+
+Shift the stack.
+
+Context
+=======
+
+Each callback gets executed with its `this` set to a function in order to yield
+results, error values, and control. The function also has these useful fields:
+
+stack
+-----
+
+The execution stack.
+
+stack_
+------
+
+The previous stack value, mostly used internally for hackish purposes.
+
+vars
+----
+
+A hash of key/values populated with `par(key, ...)`, `seq(key, ...)` and
+`this.into(key)`.
+
+into(key)
+---------
+
+Instead of sending values to the stack, sets a key and returns `this`.
+Use `this.into(key)` interchangeably with `this` for yielding keyed results.
+`into` overrides the optional key set by `par(key, ...)` and `seq(key, ...)`.
+
+args
+----
+
+`this.args` is like `this.stack`, but it contains all the arguments to `this()`
+past the error value, not just the first. `this.args` is an array with the same
+indices as `this.stack` but also stores keyed values for the last sequential
+operation. Each element in `this.array` is set to `[].slice.call(arguments, 1)`
+from inside `this()`.
+
+error
+-----
+
+This is used for error propagation. You probably shouldn't mess with it.
 
 Installation
 ============
@@ -61,3 +284,8 @@ To run the tests with [expresso](http://github.com/visionmedia/expresso),
 just do:
 
     expresso
+
+Dependencies
+------------
+    This module uses [chainsaw](http://github.com/substack/node-chainsaw.git)
+    When you `npm install seq` this dependency will automatically be installed.

@@ -11,7 +11,6 @@ Seq()
         fs.stat(__dirname + '/' + file, this.into(file));
     })
     .seq(function () {
-console.dir(this.vars);
         var sizes = Hash.map(this.vars, function (s) { return s.size })
         console.dir(sizes);
     })
