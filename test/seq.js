@@ -261,10 +261,35 @@ exports.parMap = function (assert) {
     var running = 0;
     var values = [];
     Seq(1,2,3,4,5,6,7,8,9,10)
-        .parMap(3, function (x, i) {
+        .parMap(2, function (x, i) {
             running ++;
             
-            assert.ok(running <= 3);
+            assert.ok(running <= 2);
+            
+            setTimeout((function () {
+                running --;
+                this(null, x * 10);
+            }).bind(this), 10);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.eql(this.stack, [10,20,30,40,50,60,70,80,90,100]);
+        })
+    ;
+};
+
+exports.seqMap = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 500);
+    
+    var running = 0;
+    var values = [];
+    Seq(1,2,3,4,5,6,7,8,9,10)
+        .seqMap(function (x, i) {
+            running ++;
+            
+            assert.equal(running, 1);
             
             setTimeout((function () {
                 running --;

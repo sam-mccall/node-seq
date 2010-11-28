@@ -184,6 +184,20 @@ function builder (saw, xs) {
         });
     };
     
+    this.seqMap = function (cb) {
+        var res = [];
+        var len = context.stack.length;
+        
+        this.seqEach(function (x, i) {
+            var self = (function () {
+                res[i] = arguments[1];
+                if (i == len - 1) context.stack = res;
+                this.apply(this, arguments);
+            }).bind(this);
+            cb.apply(self, arguments);
+        });
+    };
+    
     this.push = function () {
         context.stack.push.apply(context.stack, arguments);
         saw.next();
