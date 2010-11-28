@@ -76,7 +76,9 @@ function builder (saw, xs) {
         var step = saw.step;
         var down = function () {
             saw.step = step;
-            saw.down('seq');
+            saw.down(function (x) {
+                return x.path && x.path[0] != 'par'
+            });
         };
         
         running ++;
@@ -116,7 +118,7 @@ function builder (saw, xs) {
     };
     
     this.seqEach = function (cb) {
-        if (running == 0) {
+        this.seq(function () {
             context.stack_ = context.stack.slice();
             var end = context.stack.length;
             context.stack.forEach(function (x, i) {
@@ -125,7 +127,7 @@ function builder (saw, xs) {
                     if (i == end - 1) saw.next();
                 });
             });
-        }
+        });
     };
     
     this.push = function () {

@@ -119,13 +119,16 @@ exports.forEach = function (assert) {
     
     var count = 0;
     Seq(1,2,3)
+        .par(function () {
+            this(null, 4);
+        })
         .forEach(function (x, i) {
             assert.equal(x - 1, i);
             count ++;
         })
         .seq(function () {
             clearTimeout(to);
-            assert.equal(count, 3);
+            assert.equal(count, 4);
         })
     ;
 };
