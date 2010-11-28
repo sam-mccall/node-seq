@@ -12,11 +12,12 @@ Seq()
     .par(function () {
         fs.readFile(__filename, 'ascii', this);
     })
-    .seq(function (groups, src) {
-        console.log('Groups: ' + groups[0].trim());
+    .seq(function (who, groups, src) {
+        console.log('Groups: ' + groups.trim());
         console.log('This file has ' + src.length + ' bytes');
     })
     .catch(function (err) {
-        console.error(err.stack ? err.stack : err)
+        console.log('An error!');
+        console.dir(err);
     })
 ;
