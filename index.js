@@ -35,6 +35,10 @@ function builder (saw, context) {
                 if (key === undefined) {
                     context.stack_.push(args);
                 }
+                else if (typeof key == 'number') {
+                    context.stack_[key] = args[0];
+                    context.args[key] = args;
+                }
                 else {
                     context.vars[key] = args[0];
                     context.args[key] = args;
@@ -51,7 +55,6 @@ function builder (saw, context) {
     
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
-console.dir({ running : running });
         if (running == 0) {
             action(key, function () {
                 context.stack_ = [];
@@ -62,23 +65,30 @@ console.dir({ running : running });
     };
     
     this.par = function (key, cb) {
-        if (cb === undefined) { cb = key; key = undefined }
+        if (cb === undefined) {
+            cb = key;
+            key = context.stack_.length;
+            context.stack_.push(null);
+        }
+        
+        var seq = this;
+        var step = saw.step;
+        var down = function () {
+            saw.step = step;
+            saw.down('seq');
+        };
         
         running ++;
         action(key, cb, function () {
             running --;
-            if (running == 0) {
-                console.log(saw.step);
-                console.dir(saw.actions);
-                saw.down('seq');
-            }
+            if (running == 0) down('seq');
         });
         saw.next();
     };
     
     this.catch = function (cb) {
         if (context.error) {
-            context.stack = [ [context.error] ];
+            context.stack = [ [ context.error ] ];
             action(undefined, function () {
                 context.stack_ = [];
                 cb.apply(this, arguments);

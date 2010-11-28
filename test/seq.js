@@ -75,9 +75,9 @@ exports.par = function (assert) {
             setTimeout(function () { seq(null, 'y') }, 25);
         })
         .seq(function (x, y) {
+            clearTimeout(to);
             assert.equal(x, 'x');
             assert.equal(y, 'y');
-            cleartimeout(to);
         })
     ;
 };
