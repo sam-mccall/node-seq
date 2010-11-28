@@ -74,10 +74,16 @@ exports.par = function (assert) {
             var seq = this;
             setTimeout(function () { seq(null, 'y') }, 25);
         })
+        .par('z', function () {
+            this(null, 42);
+        })
         .seq(function (x, y) {
             clearTimeout(to);
             assert.equal(x, 'x');
             assert.equal(y, 'y');
+            assert.eql(this.args, { 0 : ['x'], 1 : ['y'], z : [42] });
+            assert.eql(this.stack, [ 'x', 'y' ]);
+            assert.eql(this.vars, { z : 42 });
         })
     ;
 };
