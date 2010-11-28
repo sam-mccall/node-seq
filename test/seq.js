@@ -88,32 +88,31 @@ exports.par = function (assert) {
     ;
 };
 
-/*
 exports.catchPar = function (assert) {
     var done = false, caught = false;
+    var tc = setTimeout(function () {
+        assert.fail('error not caught');
+    }, 75);
+    
     Seq()
-        .par(function (par) {
-            assert.equal(par, this);
-            setTimeout(this('one').bind({}, 'rawr'), 25);
-            setTimeout(this('two').bind({}, null, 'y'), 50);
+        .par('one', function () {
+            setTimeout(this.bind({}, 'rawr'), 25);
+        })
+        .par('two', function () {
+            setTimeout(this.bind({}, null, 'y'), 50);
         })
         .seq(function (x, y) {
-            assert.equal(x, 'x');
-            assert.equal(y, 'y');
-            done = true;
+            assert.fail('seq fired with error above');
         })
         .catch(function (err, key) {
+            clearTimeout(tc);
             assert.equal(err, 'rawr');
             assert.equal(key, 'one');
-            caught = true;
         })
     ;
-    setTimeout(function () {
-        assert.ok(!done);
-        assert.ok(caught);
-    }, 75);
 };
 
+/*
 exports.forEach = function (assert) {
     var count = 0, done = false;
     Seq([1,2,3])
