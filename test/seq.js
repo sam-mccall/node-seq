@@ -31,7 +31,7 @@ exports.into = function (assert) {
     }, 50);
     var calls = 0;
     
-    Seq(1)
+    Seq(3,4,5)
         .seq(function () {
             this.into('w')(null, 5);
         })
