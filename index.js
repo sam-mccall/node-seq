@@ -151,11 +151,13 @@ function builder (saw, xs) {
                 this.par(function () {
                     var call = (function () {
                         active ++;
-                        cb.call((function () {
+                        var self = (function () {
                             this.apply(this, arguments);
                             active --;
                             if (queue.length) queue.shift()();
-                        }).bind(this), x, i);
+                        }).bind(this);
+                        Hash(this).forEach(function (x,k) { self[k] = x });
+                        cb.call(self, x, i);
                     }).bind(this);
                     
                     if (active >= limit) queue.push(call);
