@@ -7,11 +7,15 @@ Seq()
         fs.readdir(__dirname, this);
     })
     .flatten()
-    .parEach(function (file) {
-        fs.stat(__dirname + '/' + file, this(file));
+    .forEach(function (file) {
+        console.log(file);
+        this.par(file, function () {
+            var seq = this;
+            fs.stat(__dirname + '/' + file, this);
+        });
     })
-    .seq(function (stats) {
-        var sizes = Hash.map(stats[0], function (s) { return s.size })
+    .seq(function () {
+        var sizes = Hash.map(this.vars, function (s) { return s.size })
         console.dir(sizes);
     })
 ;

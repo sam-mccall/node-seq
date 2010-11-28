@@ -7,8 +7,10 @@ Seq()
         exec('whoami', this);
     })
     .par(function (who) {
-        exec('groups ' + who, this());
-        fs.readFile(__filename, 'ascii', this());
+        exec('groups ' + who[0], this);
+    })
+    .par(function () {
+        fs.readFile(__filename, 'ascii', this);
     })
     .seq(function (groups, src) {
         console.log('Groups: ' + groups[0].trim());

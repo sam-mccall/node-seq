@@ -4,25 +4,26 @@ var Chainsaw = require('chainsaw');
 
 module.exports = Seq;
 function Seq () {
-    var context = {
-        vars : {},
-        args : {},
-        stack : [].slice.call(arguments),
-        error : null,
-    };
-    context.stack_ = context.stack;
-    
+    var xs = [].slice.call(arguments);
     var ch = Chainsaw(function (saw) {
-        builder.call(this, saw, context);
+        builder.call(this, saw, xs);
     });
-    ch.catch(function (err) {
-        console.error(err.stack ? err.stack : err)
+    process.nextTick(function () {
+        ch.catch(function (err) {
+            console.error(err.stack ? err.stack : err)
+        });
     });
     return ch;
 }
 
-function builder (saw, context) {
-    this.context = context;
+function builder (saw, xs) {
+    var context = this.context = {
+        vars : {},
+        args : {},
+        stack : xs,
+        error : null,
+    };
+    context.stack_ = context.stack;
     
     function action (key, f, g) {
         var cb = function (err) {
@@ -107,7 +108,7 @@ function builder (saw, context) {
             var end = context.stack.length;
             context.stack.forEach(function (x, i) {
                 action(i, function () {
-                    cb.call(this, x, i);
+                    saw.nest(cb, x, i);
                     if (i == end - 1) saw.next();
                 });
             });
@@ -139,6 +140,16 @@ function builder (saw, context) {
         var x = context.stack.shift();
         if (cb) saw.nest(cb, x, context);
         else saw.next();
+    };
+    
+    this.flatten = function () {
+        var xs = [];
+        context.stack.forEach(function f (x) {
+            if (Array.isArray(x)) x.forEach(f);
+            else xs.push(x);
+        });
+        context.stack = xs;
+        saw.next();
     };
     
     this.do = function (cb) {
