@@ -103,6 +103,19 @@ function builder (saw, xs) {
     };
     
     this.forEach = function (cb) {
+        this.seq(function () {
+            context.stack_ = context.stack.slice();
+            var end = context.stack.length;
+            context.stack.forEach(function (x, i) {
+                action(i, function () {
+                    cb.call(this, x, i);
+                    if (i == end - 1) saw.next();
+                });
+            });
+        });
+    };
+    
+    this.seqEach = function (cb) {
         if (running == 0) {
             context.stack_ = context.stack.slice();
             var end = context.stack.length;

@@ -133,7 +133,7 @@ exports.forEach = function (assert) {
 /*
 exports.seqEach = function (assert) {
     var count = 0, done = false;
-    Seq([1,2,3])
+    Seq(1,2,3)
         .seqEach(function (x, i, seq) {
             assert.equal(seq, this);
             assert.equal(x - 1, i);
@@ -151,6 +151,7 @@ exports.seqEach = function (assert) {
     }, 25);
 };
 
+/*
 exports.seqEachCatch = function (assert) {
     var count = 0, done = false;
     var caught = [], values = [];
