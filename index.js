@@ -57,11 +57,15 @@ function builder (saw, xs) {
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
         if (running == 0) {
-            action(key, function () {
-                context.stack_ = [];
-                cb.apply(this, arguments);
-                context.stack = context.stack_;
-            }, saw.next);
+            action(key,
+                function () {
+                    context.stack_ = [];
+                    cb.apply(this, arguments);
+                }, function () {
+                    context.stack = context.stack_;
+                    saw.next()
+                }
+            );
         }
     };
     
