@@ -25,6 +25,25 @@ exports.seq = function (assert) {
     ;
 };
 
+exports.into = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never got to the end of the chain');
+    }, 50);
+    var calls = 0;
+    
+    Seq(1)
+        .seq(function () {
+            this.into('w')(null, 5);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.equal(arguments.length, 0);
+            assert.equal(this.vars.w, 5);
+        })
+    ;
+};
+ 
+
 exports.catchSeq = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never caught the error');
@@ -43,8 +62,8 @@ exports.catchSeq = function (assert) {
             calls.after = true;
         })
         .seq(function (n) {
-            assert.equal(n, 2);
             calls.next = true;
+            assert.fail('should have skipped this');
         })
         .catch(function (err) {
             assert.equal(err, 'pow!');

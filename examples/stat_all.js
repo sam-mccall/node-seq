@@ -7,14 +7,12 @@ Seq()
         fs.readdir(__dirname, this);
     })
     .flatten()
-    .forEach(function (file) {
+    .parEach(function (file) {
         console.log(file);
-        this.par(file, function () {
-            var seq = this;
-            fs.stat(__dirname + '/' + file, this);
-        });
+        fs.stat(__dirname + '/' + file, this);
     })
     .seq(function () {
+    console.dir(this.stack);
         var sizes = Hash.map(this.vars, function (s) { return s.size })
         console.dir(sizes);
     })
