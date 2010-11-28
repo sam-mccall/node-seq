@@ -72,19 +72,17 @@ function builder (saw, xs) {
             context.stack_.push(null);
         }
         
-        var seq = this;
         var step = saw.step;
-        var down = function () {
-            saw.step = step;
-            saw.down(function (x) {
-                return x.path && x.path[0] != 'par'
-            });
-        };
-        
         running ++;
+        
         action(key, cb, function () {
             running --;
-            if (running == 0) down('seq');
+            if (running == 0) {
+                saw.step = step;
+                saw.down(function (x) {
+                    return x.path && x.path[0] != 'par'
+                });
+            }
         });
         saw.next();
     };
@@ -120,8 +118,8 @@ function builder (saw, xs) {
     this.seqEach = function (cb) {
         this.seq(function () {
             context.stack_ = context.stack.slice();
-            
             var xs = context.stack.slice();
+            
             (function next (i) {
                 action(
                     i,
@@ -133,6 +131,21 @@ function builder (saw, xs) {
                 );
             }).bind(this)(0);
         });
+    };
+    
+    this.parEach = function (cb) {
+        context.stack_ = context.stack.slice();
+        var xs = context.stack.slice();
+        
+        saw.nest(function () {
+            xs.forEach((function (x, i) {
+                this.par(function () {
+                    cb.call(this, x, i);
+                });
+            }).bind(this));
+            this.seq(saw.next);
+        });
+        context.stack = xs;
     };
     
     this.push = function () {

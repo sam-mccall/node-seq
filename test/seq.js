@@ -184,27 +184,26 @@ exports.seqEachCatch = function (assert) {
     ;
 };
 
-/*
 exports.parEach = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    
     var values = [];
-    var done = false;
-    Seq([1,2,3,4])
-        .parEach(function (x, i, par) {
-            assert.equal(this, par);
+    Seq(1,2,3,4)
+        .parEach(function (x, i) {
             values.push([i,x]);
-            setTimeout(par().bind({}, null, x * 10), 50);
+            setTimeout(this.bind({}, null), 20);
         })
-        .seq(function (xs) {
-            assert.deepEqual(xs, [10,20,30,40])
-            done = true;
+        .seq(function () {
+            assert.deepEqual(this.stack, [1,2,3,4])
+            assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
+            clearTimeout(to);
         })
     ;
-    setTimeout(function () {
-        assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
-        assert.ok(done);
-    }, 100);
 };
 
+/*
 exports.parEachCatch = function (assert) {
     var values = [];
     var done = false;
