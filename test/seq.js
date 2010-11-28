@@ -224,3 +224,28 @@ exports.parEachCatch = function (assert) {
         })
     ;
 };
+
+exports.parEachLimited = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 500);
+    
+    var running = 0;
+    var values = [];
+    Seq(1,2,3,4,5,6,7,8,9,10)
+        .parEach(3, function (x, i) {
+            running ++;
+            
+            assert.ok(running <= 3);
+            
+            values.push([i,x]);
+            setTimeout((function () {
+                running --;
+                this(null);
+            }).bind(this), 10);
+        })
+        .seq(function () {
+            clearTimeout(to);
+        })
+    ;
+};

@@ -140,27 +140,23 @@ function builder (saw, xs) {
         
         var step = saw.step;
         saw.nest(function () {
+            var active = 0;
+            var queue = [];
+            
             xs.forEach((function (x, i) {
-                var active = 0;
-                
                 this.par(function () {
-                    var queue = [];
                     var self = (function () {
                         this.apply(this, arguments);
                         active --;
                         if (queue.length) queue.shift()();
                     }).bind(this);
                     
-                    active ++;
-                    cb.call(function () {
-                        var args = arguments;
-                        if (active > limit) {
-                            queue.push(function () { self.apply(self, args) });
-                        }
-                        else {
-                            self.apply(self, args);
-                        }
-                    }, x, i);
+                    function call () {
+                        active ++;
+                        cb.call(self);
+                    }
+                    if (active >= limit) queue.push(call);
+                    else call();
                 });
             }).bind(this));
             this.seq(saw.next);
