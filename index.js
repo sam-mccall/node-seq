@@ -153,7 +153,7 @@ function builder (saw, xs) {
                     
                     function call () {
                         active ++;
-                        cb.call(self);
+                        cb.call(self, x, i);
                     }
                     if (active >= limit) queue.push(call);
                     else call();
