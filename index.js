@@ -28,7 +28,7 @@ function builder (saw, context) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
-                context.error = err;
+                context.error = { message : err, key : key };
                 saw.down('catch');
             }
             else {
@@ -88,11 +88,13 @@ function builder (saw, context) {
     
     this.catch = function (cb) {
         if (context.error) {
-            context.stack = [ [ context.error ] ];
+            context.stack = [ context.error.message, context.error.key ];
             action(undefined, function () {
                 context.stack_ = [];
                 cb.apply(this, arguments);
                 context.stack = context.stack_;
+                
+                context.error = null;
                 process.nextTick(saw.next);
             });
         }
