@@ -137,6 +137,7 @@ function builder (saw, xs) {
         context.stack_ = context.stack.slice();
         var xs = context.stack.slice();
         
+        var step = saw.step;
         saw.nest(function () {
             xs.forEach((function (x, i) {
                 this.par(function () {
@@ -144,6 +145,11 @@ function builder (saw, xs) {
                 });
             }).bind(this));
             this.seq(saw.next);
+            this.catch(function (err, key) {
+                saw.step = step;
+                context.error = { message : err, key : key };
+                saw.down('catch');
+            });
         });
         context.stack = xs;
     };

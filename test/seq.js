@@ -203,29 +203,24 @@ exports.parEach = function (assert) {
     ;
 };
 
-/*
 exports.parEachCatch = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    
     var values = [];
-    var done = false;
-    var errors = [];
-    Seq([1,2,3,4])
-        .parEach(function (x, i, par) {
-            assert.equal(this, par);
+    Seq(1,2,3,4)
+        .parEach(function (x, i) {
             values.push([i,x]);
-            setTimeout(par().bind({}, 'zing' + i), i * 10);
+            setTimeout(this.bind({}, 'zing'), 10);
         })
-        .seq(function (xs) {
-            assert.deepEqual(xs, [10,20,30,40])
-            done = true;
+        .seq(function () {
+            assert.fail('should have errored before this point')
         })
         .catch(function (err) {
-            errors.push(err);
+            clearTimeout(to);
+            assert.equal(err, 'zing');
+            assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
         })
     ;
-    setTimeout(function () {
-        assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
-        assert.ok(!done);
-        assert.deepEqual(errors, ['zing0','zing1','zing2','zing3']);
-    }, 100);
 };
-*/
