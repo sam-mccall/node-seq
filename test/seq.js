@@ -112,24 +112,25 @@ exports.catchPar = function (assert) {
     ;
 };
 
-/*
 exports.forEach = function (assert) {
-    var count = 0, done = false;
-    Seq([1,2,3])
+    var to = setTimeout(function () {
+        assert.fail('seq never fired after forEach');
+    }, 25);
+    
+    var count = 0;
+    Seq(1,2,3)
         .forEach(function (x, i) {
             assert.equal(x - 1, i);
             count ++;
         })
         .seq(function () {
+            clearTimeout(to);
             assert.equal(count, 3);
-            done = true;
         })
     ;
-    setTimeout(function () {
-        assert.ok(done);
-    }, 25);
 };
 
+/*
 exports.seqEach = function (assert) {
     var count = 0, done = false;
     Seq([1,2,3])
