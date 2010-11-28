@@ -133,55 +133,58 @@ exports.forEach = function (assert) {
     ;
 };
 
-/*
 exports.seqEach = function (assert) {
-    var count = 0, done = false;
+    var to = setTimeout(function () {
+        assert.fail('seqEach never finished');
+    }, 25);
+    
+    var count = 0;
+    var ii = 0;
     Seq(1,2,3)
-        .seqEach(function (x, i, seq) {
-            assert.equal(seq, this);
-            assert.equal(x - 1, i);
+        .seqEach(function (x, i) {
+            assert.equal(i, ii++);
+            assert.equal(x, [1,2,3][i]);
             count ++;
-            this(null, x * 10);
+            this(null);
         })
-        .seq(function (xs) {
+        .seq(function () {
+            clearTimeout(to);
             assert.equal(count, 3);
-            assert.deepEqual(xs, [10,20,30]);
-            done = true;
         })
     ;
-    setTimeout(function () {
-        assert.ok(done);
-    }, 25);
 };
 
-/*
 exports.seqEachCatch = function (assert) {
-    var count = 0, done = false;
-    var caught = [], values = [];
-    Seq([1,2,3,4])
-        .seqEach(function (x, i, seq) {
+    var to = setTimeout(function () {
+        assert.fail('never caught the error');
+    }, 25);
+    var tf = setTimeout(function () {
+        assert.fail('never resumed afterwards');
+    }, 25);
+    
+    var values = [];
+    Seq(1,2,3,4)
+        .seqEach(function (x, i) {
             values.push([i,x]);
-            assert.equal(seq, this);
             assert.equal(x - 1, i);
-            count ++;
             if (i >= 2) this('meow ' + i)
             else this(null, x * 10);
         })
         .seq(function (xs) {
-            done = true;
+            assert.fail('should fail before this action');
         })
         .catch(function (err) {
-            caught.push(err);
+            clearTimeout(to);
+            assert.equal(err, 'meow 2');
+            assert.deepEqual(values, [[0,1],[1,2],[2,3]]);
+        })
+        .seq(function () {
+            clearTimeout(tf);
         })
     ;
-    setTimeout(function () {
-        assert.ok(!done);
-        assert.equal(count, 3);
-        assert.deepEqual(caught, [ 'meow 2' ]);
-        assert.deepEqual(values, [[0,1],[1,2],[2,3]]);
-    }, 25);
 };
 
+/*
 exports.parEach = function (assert) {
     var values = [];
     var done = false;

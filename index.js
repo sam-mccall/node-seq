@@ -120,13 +120,18 @@ function builder (saw, xs) {
     this.seqEach = function (cb) {
         this.seq(function () {
             context.stack_ = context.stack.slice();
-            var end = context.stack.length;
-            context.stack.forEach(function (x, i) {
-                action(i, function () {
-                    saw.nest(cb, x, i);
-                    if (i == end - 1) saw.next();
-                });
-            });
+            
+            var xs = context.stack.slice();
+            (function next (i) {
+                action(
+                    i,
+                    function () { cb.call(this, xs[i], i) },
+                    function () {
+                        if (i == xs.length - 1) saw.next();
+                        else next(i + 1);
+                    }
+                );
+            }).bind(this)(0);
         });
     };
     
