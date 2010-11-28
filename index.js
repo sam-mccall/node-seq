@@ -164,7 +164,10 @@ function builder (saw, xs) {
                     else call();
                 });
             }).bind(this));
-            this.seq(saw.next);
+            this.seq(function () {
+                context.vars = this.vars;
+                saw.next();
+            });
             this.catch(function (err, key) {
                 saw.step = step;
                 context.error = { message : err, key : key };
