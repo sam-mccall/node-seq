@@ -8,11 +8,10 @@ Seq()
     })
     .flatten()
     .parEach(function (file) {
-        console.log(file);
-        fs.stat(__dirname + '/' + file, this);
+        fs.stat(__dirname + '/' + file, this.into(file));
     })
     .seq(function () {
-    console.dir(this.stack);
+console.dir(this.vars);
         var sizes = Hash.map(this.vars, function (s) { return s.size })
         console.dir(sizes);
     })

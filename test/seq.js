@@ -217,6 +217,25 @@ exports.parEach = function (assert) {
     ;
 };
 
+exports.parEachInto = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    
+    Seq(1,2,3,4)
+        .parEach(function (x, i) {
+            setTimeout((function () {
+                this.into('abcd'.charAt(i))(null, x);
+            }).bind(this), 20);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.deepEqual(this.stack, [1,2,3,4])
+            assert.deepEqual(this.vars, { a : 1, b : 2, c : 3, d : 4 });
+        })
+    ;
+};
+
 exports.parEachCatch = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never finished');
