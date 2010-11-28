@@ -133,15 +133,34 @@ function builder (saw, xs) {
         });
     };
     
-    this.parEach = function (cb) {
+    this.parEach = function (limit, cb) {
         context.stack_ = context.stack.slice();
         var xs = context.stack.slice();
+        if (cb === undefined) { cb = limit; limit = xs.length }
         
         var step = saw.step;
         saw.nest(function () {
             xs.forEach((function (x, i) {
+                var active = 0;
+                
                 this.par(function () {
-                    cb.call(this, x, i);
+                    var queue = [];
+                    var self = (function () {
+                        this.apply(this, arguments);
+                        active --;
+                        if (queue.length) queue.shift()();
+                    }).bind(this);
+                    
+                    active ++;
+                    cb.call(function () {
+                        var args = arguments;
+                        if (active > limit) {
+                            queue.push(function () { self.apply(self, args) });
+                        }
+                        else {
+                            self.apply(self, args);
+                        }
+                    }, x, i);
                 });
             }).bind(this));
             this.seq(saw.next);
