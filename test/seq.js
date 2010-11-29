@@ -17,9 +17,13 @@ exports.seq = function (assert) {
             assert.eql(this.stack, [n]);
         })
         .seq(function (n) {
-            clearTimeout(to);
             assert.eql(n, 2);
             assert.eql(this.stack, [n]);
+            this(null, 5, 6, 7);
+        })
+        .seq(function (x, y, z) {
+            clearTimeout(to);
+            assert.eql([x,y,z], [5,6,7]);
         })
     ;
 };
