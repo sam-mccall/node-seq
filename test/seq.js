@@ -11,7 +11,7 @@ exports.seq = function (assert) {
         })
         .seq(function (n) {
             assert.eql(n, 1);
-            assert.eql(n, this.pow);
+            assert.eql(n, this.vars.pow);
             var seq = this;
             setTimeout(function () { seq(null, 2) }, 25);
             assert.eql(this.stack, [n]);
@@ -36,8 +36,8 @@ exports.into = function (assert) {
         })
         .seq(function (w) {
             clearTimeout(to);
-            assert.eql(w, this.var.w);
-            assert.eql(arguments.length, 0);
+            assert.eql(w, this.vars.w);
+            assert.eql(arguments.length, 1);
             assert.eql(w, 5);
         })
     ;
@@ -105,7 +105,7 @@ exports.par = function (assert) {
             assert.eql(y, 'y');
             assert.eql(z, 42);
             assert.eql(this.args, { 0 : ['x'], 1 : ['y'], z : [42] });
-            assert.eql(this.stack, [ 'x', 'y' ]);
+            assert.eql(this.stack, [ 'x', 'y', 42 ]);
             assert.eql(this.vars, { z : 42 });
         })
     ;

@@ -34,7 +34,7 @@ function builder (saw, xs) {
             }
             else {
                 if (key === undefined) {
-                    context.stack_.push(args);
+                    context.stack_.push(args[0]);
                 }
                 else if (typeof key == 'number') {
                     context.stack_[key] = args[0];
@@ -43,6 +43,7 @@ function builder (saw, xs) {
                 else {
                     context.vars[key] = args[0];
                     context.args[key] = args;
+                    context.stack_.push(args[0]);
                 }
                 if (g) g(args, key);
             }
@@ -62,7 +63,7 @@ function builder (saw, xs) {
                     context.stack_ = [];
                     cb.apply(this, arguments);
                 }, function () {
-                    context.stack = context.stack_[0];
+                    context.stack = context.stack_;
                     saw.next()
                 }
             );
