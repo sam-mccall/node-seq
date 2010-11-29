@@ -7,14 +7,12 @@ Seq()
         exec('whoami', this)
     })
     .par(function (who) {
-        //exec('groups ' + who, this);
-        this(null, 'meowsy');
+        exec('groups ' + who, this);
     })
     .par(function (who) {
-        //fs.readFile(__filename, 'ascii', this);
-        this(null, 'what');
+        fs.readFile(__filename, 'ascii', this);
     })
-    .seq(function (b) {
+    .seq(function (groups, src) {
         console.log('Groups: ' + groups.trim());
         console.log('This file has ' + src.length + ' bytes');
     })

@@ -33,10 +33,7 @@ stat_all.js
 
 Output:
 
-    { 'parseq.js': 469
-    , 'stat_all.js': 404
-    , 'parseq_catch.js': 565
-    }
+    { 'stat_all.js': 404, 'parseq.js': 464 }
 
 parseq.js
 ---------
@@ -50,12 +47,12 @@ parseq.js
             exec('whoami', this)
         })
         .par(function (who) {
-            exec('groups ' + who[0], this);
+            exec('groups ' + who, this);
         })
-        .par(function () {
+        .par(function (who) {
             fs.readFile(__filename, 'ascii', this);
         })
-        .seq(function (who, groups, src) {
+        .seq(function (groups, src) {
             console.log('Groups: ' + groups.trim());
             console.log('This file has ' + src.length + ' bytes');
         })
@@ -64,14 +61,7 @@ parseq.js
 Output:
 
     Groups: substack : substack dialout cdrom floppy audio src video plugdev games netdev fuse www
-    This file has 469 bytes
-
-There is a default error handler at the end of all chains. The default error
-handler looks like this:
-
-    .catch(function (err) {
-        console.error(err.stack ? err.stack : err)
-    })
+    This file has 464 bytes
 
 Methods
 =======
@@ -137,6 +127,13 @@ that the action that caused the error was populating, which may be undefined.
 `catch` is a sequential action and further actions may appear after a `catch` in
 a chain. If the execution reaches a `catch` in a chain and no error has occured,
 the `catch` is skipped over.
+
+For convenience, there is a default error handler at the end of all chains.
+This default error handler looks like this:
+
+    .catch(function (err) {
+        console.error(err.stack ? err.stack : err)
+    })
 
 forEach(cb)
 -----------
