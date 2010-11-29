@@ -62,7 +62,7 @@ function builder (saw, xs) {
                     context.stack_ = [];
                     cb.apply(this, arguments);
                 }, function () {
-                    context.stack = context.stack_;
+                    context.stack = context.stack_[0];
                     saw.next()
                 }
             );
