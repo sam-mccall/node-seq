@@ -7,15 +7,15 @@ exports.seq = function (assert) {
     
     Seq(1)
         .seq(function (n) {
-            assert.equal(n, 1);
+            assert.eql(n, 1);
             var seq = this;
             setTimeout(function () { seq(null, 2) }, 25);
             assert.eql(this.stack, [n]);
         })
         .seq(function (n) {
-            assert.equal(n, 2);
-            assert.eql(this.stack, [n]);
             clearTimeout(to);
+            assert.eql(n, 2);
+            assert.eql(this.stack, [n]);
         })
     ;
 };
@@ -32,8 +32,8 @@ exports.into = function (assert) {
         })
         .seq(function () {
             clearTimeout(to);
-            assert.equal(arguments.length, 0);
-            assert.equal(this.vars.w, 5);
+            assert.eql(arguments.length, 0);
+            assert.eql(this.vars.w, 5);
         })
     ;
 };
@@ -51,7 +51,7 @@ exports.catchSeq = function (assert) {
     var calls = {};
     Seq(1)
         .seq(function (n) {
-            assert.equal(n, 1);
+            assert.eql(n, 1);
             calls.before = true;
             this('pow!');
             calls.after = true;
@@ -61,7 +61,7 @@ exports.catchSeq = function (assert) {
             assert.fail('should have skipped this');
         })
         .catch(function (err) {
-            assert.equal(err, 'pow!');
+            assert.eql(err, 'pow!');
             assert.ok(calls.before);
             assert.ok(!calls.after);
             assert.ok(!calls.next);
@@ -93,8 +93,8 @@ exports.par = function (assert) {
         })
         .seq(function (x, y) {
             clearTimeout(to);
-            assert.equal(x, 'x');
-            assert.equal(y, 'y');
+            assert.eql(x, 'x');
+            assert.eql(y, 'y');
             assert.eql(this.args, { 0 : ['x'], 1 : ['y'], z : [42] });
             assert.eql(this.stack, [ 'x', 'y' ]);
             assert.eql(this.vars, { z : 42 });
@@ -120,8 +120,8 @@ exports.catchPar = function (assert) {
         })
         .catch(function (err, key) {
             clearTimeout(tc);
-            assert.equal(err, 'rawr');
-            assert.equal(key, 'one');
+            assert.eql(err, 'rawr');
+            assert.eql(key, 'one');
         })
     ;
 };
@@ -137,12 +137,12 @@ exports.forEach = function (assert) {
             this(null, 4);
         })
         .forEach(function (x, i) {
-            assert.equal(x - 1, i);
+            assert.eql(x - 1, i);
             count ++;
         })
         .seq(function () {
             clearTimeout(to);
-            assert.equal(count, 4);
+            assert.eql(count, 4);
         })
     ;
 };
@@ -156,14 +156,14 @@ exports.seqEach = function (assert) {
     var ii = 0;
     Seq(1,2,3)
         .seqEach(function (x, i) {
-            assert.equal(i, ii++);
-            assert.equal(x, [1,2,3][i]);
+            assert.eql(i, ii++);
+            assert.eql(x, [1,2,3][i]);
             count ++;
             this(null);
         })
         .seq(function () {
             clearTimeout(to);
-            assert.equal(count, 3);
+            assert.eql(count, 3);
         })
     ;
 };
@@ -180,7 +180,7 @@ exports.seqEachCatch = function (assert) {
     Seq(1,2,3,4)
         .seqEach(function (x, i) {
             values.push([i,x]);
-            assert.equal(x - 1, i);
+            assert.eql(x - 1, i);
             if (i >= 2) this('meow ' + i)
             else this(null, x * 10);
         })
@@ -189,7 +189,7 @@ exports.seqEachCatch = function (assert) {
         })
         .catch(function (err) {
             clearTimeout(to);
-            assert.equal(err, 'meow 2');
+            assert.eql(err, 'meow 2');
             assert.deepEqual(values, [[0,1],[1,2],[2,3]]);
         })
         .seq(function () {
@@ -252,7 +252,7 @@ exports.parEachCatch = function (assert) {
         })
         .catch(function (err) {
             clearTimeout(to);
-            assert.equal(err, 'zing');
+            assert.eql(err, 'zing');
             assert.deepEqual(values, [[0,1],[1,2],[2,3],[3,4]]);
         })
     ;
@@ -322,7 +322,7 @@ exports.seqMap = function (assert) {
         .seqMap(function (x, i) {
             running ++;
             
-            assert.equal(running, 1);
+            assert.eql(running, 1);
             
             setTimeout((function () {
                 running --;
