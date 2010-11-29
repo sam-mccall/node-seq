@@ -34,7 +34,7 @@ function builder (saw, xs) {
             }
             else {
                 if (key === undefined) {
-                    context.stack_.push(args[0]);
+                    context.stack_.push.apply(context.stack_, args);
                 }
                 else if (typeof key == 'number') {
                     context.stack_[key] = args[0];
