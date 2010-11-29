@@ -97,7 +97,7 @@ will be set to the second argument. Further arguments are available in
 `this.args`.
 
 If `key` is specified, the result from the second argument goes to
-`this.vars[key]` instead of the stack.
+`this.vars[key]` in addition to the stack.
 
 par(cb)
 -------
@@ -114,7 +114,7 @@ order in which the actions appear in the chain when `this()` is called. Like in
 will get pushed to the stack. Further arguments are available in `this.args`.
 
 If `key` is specified, the result from the second argument goes to
-`this.vars[key]` instead of the stack.
+`this.vars[key]` in addition to the stack.
 
 catch(cb)
 ---------
