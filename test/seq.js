@@ -136,9 +136,7 @@ exports.forEach = function (assert) {
     
     var count = 0;
     Seq(1,2,3)
-        .par(function () {
-            this(null, 4);
-        })
+        .push(4)
         .forEach(function (x, i) {
             assert.eql(x - 1, i);
             count ++;
