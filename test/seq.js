@@ -80,6 +80,9 @@ exports.par = function (assert) {
     }, 75);
     
     Seq()
+        .seq(function () {
+            this(null, 'mew');
+        })
         .par(function () {
             var seq = this;
             setTimeout(function () { seq(null, 'x') }, 50);
