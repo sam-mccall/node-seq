@@ -70,6 +70,11 @@ function builder (saw, xs) {
     };
     
     this.par = function (key, cb) {
+        if (running == 0) {
+            // empty the active stack for the first par() in a chain
+            context.stack_ = [];
+        }
+        
         if (cb === undefined) {
             cb = key;
             key = context.stack_.length;
@@ -79,14 +84,18 @@ function builder (saw, xs) {
         var step = saw.step;
         running ++;
         
-        action(key, cb, function () {
-            running --;
-            if (running == 0) {
-                saw.step = step;
-                saw.down(function (x) {
-                    return x.path && x.path[0] != 'par'
-                });
-            }
+        process.nextTick(function () {
+            action(key, cb, function () {
+                running --;
+                if (running == 0) {
+                    context.stack = context.stack_.slice();
+                    
+                    saw.step = step;
+                    saw.down(function (x) {
+                        return x.path && x.path[0] != 'par'
+                    });
+                }
+            });
         });
         saw.next();
     };
