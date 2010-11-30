@@ -175,7 +175,7 @@ function builder (saw, xs) {
                 });
             }).bind(this));
             this.seq(function () {
-                context.vars = this.vars;
+                Hash.update(context.vars, this.vars);
                 saw.next();
             });
             this.catch(function (err, key) {
