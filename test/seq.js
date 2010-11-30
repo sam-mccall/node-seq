@@ -228,6 +228,28 @@ exports.parEach = function (assert) {
     ;
 };
 
+exports.parEachVars = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    var values = [];
+    
+    Seq()
+        .seq('abc', function () {
+            this(null, 'a', 'b', 'c');
+        })
+        .parEach(function (x) {
+            values.push(x);
+            setTimeout(this.bind(this, null), Math.random() * 50);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.eql(values, ['a','b','c']);
+            assert.eql(this.vars.abc, values);
+        })
+    ;
+};
+
 exports.parEachInto = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never finished');
