@@ -33,17 +33,16 @@ function builder (saw, xs) {
                 saw.down('catch');
             }
             else {
-                if (key === undefined) {
-                    context.stack_.push.apply(context.stack_, args);
-                }
-                else if (typeof key == 'number') {
+                if (typeof key == 'number') {
                     context.stack_[key] = args[0];
                     context.args[key] = args;
                 }
                 else {
-                    context.vars[key] = args[0];
-                    context.args[key] = args;
-                    context.stack_.push(args[0]);
+                    context.stack_.push.apply(context.stack_, args);
+                    if (key !== undefined) {
+                        context.vars[key] = args[0];
+                        context.args[key] = args;
+                    }
                 }
                 if (g) g(args, key);
             }

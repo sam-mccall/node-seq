@@ -231,7 +231,7 @@ exports.parEach = function (assert) {
 exports.parEachVars = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never finished');
-    }, 50);
+    }, 60);
     var values = [];
     
     Seq()
@@ -240,12 +240,13 @@ exports.parEachVars = function (assert) {
         })
         .parEach(function (x) {
             values.push(x);
-            setTimeout(this.bind(this, null), Math.random() * 50);
+            setTimeout(this.bind(this, null), Math.floor(Math.random() * 50));
         })
         .seq(function () {
             clearTimeout(to);
             assert.eql(values, ['a','b','c']);
-            assert.eql(this.vars.abc, values);
+            assert.eql(this.stack, ['a','b','c']);
+            assert.eql(this.vars.abc, 'a');
         })
     ;
 };
