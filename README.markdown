@@ -92,12 +92,12 @@ Once all running parallel actions are finished executing,
 the supplied callback is `apply()`'d with the context stack.
 
 To execute the next action in the chain, call `this()`. The first
-argument must be the error value. The stack for the next action in the chain
-will be set to the second argument. Further arguments are available in
-`this.args`.
+argument must be the error value. The rest of the values will become the stack
+for the next action in the chain and are also available at `this.args`.
 
-If `key` is specified, the result from the second argument goes to
-`this.vars[key]` in addition to the stack.
+If `key` is specified, the second argument sent to `this` goes to
+`this.vars[key]` in addition to the stack and `this.args`.
+`this.vars` persists across all requests unless it is overwritten.
 
 par(cb)
 -------
@@ -105,16 +105,19 @@ par(cb, key)
 ------------
 
 Use `par` to execute actions in parallel.
-Chain multiple parallel actions together and collect all the responses in a
-sequential operation like `seq`.
+Chain multiple parallel actions together and collect all the responses on the
+stack with a sequential operation like `seq`.
 
-Each parallel action runs immediately and pushes its value onto the stack in the
-order in which the actions appear in the chain when `this()` is called. Like in
-`seq`, the first argument to `this()` should be the error value and the second
-will get pushed to the stack. Further arguments are available in `this.args`.
+Each `par` sets one element in the stack with the second argument to `this()` in
+the order in which it appears, so multiple `par`s can be chained together.
 
-If `key` is specified, the result from the second argument goes to
-`this.vars[key]` in addition to the stack.
+Like with `seq`, the first argument to `this()` should be the error value and
+the second will get pushed to the stack. Further arguments are available in
+`this.args`.
+
+If `key` is specified, the result from the second argument send to `this()` goes
+to `this.vars[key]`.
+`this.vars` persists across all requests unless it is overwritten.
 
 catch(cb)
 ---------
