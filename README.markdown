@@ -67,7 +67,7 @@ Methods
 =======
 
 Each method executes callbacks with a context (its `this`) described in the next
-section.
+section. Every method returns `this`.
 
 Whenever `this()` is called with a non-falsy first argument, the error value
 propagates down to the first `catch` it sees, skipping over all actions in
@@ -207,25 +207,25 @@ flatten()
 
 Recursively flatten all the arrays in the stack.
 
-push(x, y...)
--------------
-
-Push values onto the stack when this action executes.
-
 extend([x,y...])
 ----------------
 
 Like `push`, but takes an array. This is like python's `[].extend()`.
 
-splice(...)
------------
+set([x,y...])
+-------------
 
-Splice the stack.
+Set the stack to a new array.
 
-shift()
+empty()
 -------
 
-Shift the stack.
+Set the stack to [].
+
+push(x,y...), pop(), shift(), unshift(x), splice(...)
+-----------------------------------------------------
+
+Executes an array operation on the stack.
 
 Context
 =======
