@@ -252,6 +252,16 @@ function builder (saw, xs) {
         saw.next();
     };
     
+    this.empty = function () {
+        context.stack = [];
+        saw.next();
+    };
+    
+    this.set = function () {
+        context.stack = [].slice.call(arguments);
+        saw.next();
+    };
+    
     this.do = function (cb) {
         saw.nest(cb, context);
     };
