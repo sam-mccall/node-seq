@@ -231,7 +231,7 @@ exports.parEach = function (assert) {
 exports.parEachVars = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never finished');
-    }, 60);
+    }, 70);
     var values = [];
     
     Seq()
@@ -366,6 +366,76 @@ exports.seqMap = function (assert) {
         .seq(function () {
             clearTimeout(to);
             assert.eql(this.stack, [10,20,30,40,50,60,70,80,90,100]);
+        })
+    ;
+};
+
+exports.stack = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    
+    Seq(4,5,6)
+        .seq(function (x, y, z) {
+            assert.eql(arguments.length, 3);
+            assert.eql([x,y,z], [4,5,6]);
+            assert.eql(this.stack, [4,5,6]);
+            this(null);
+        })
+        .set(3,4)
+        .seq(function (x, y) {
+            assert.eql(arguments.length, 2);
+            assert.eql([x,y], [3,4]);
+            assert.eql(this.stack, [3,4]);
+            this(null);
+        })
+        .empty()
+        .seq(function () {
+            assert.eql(arguments.length, 0);
+            assert.eql(this.stack, []);
+            this.next(null, ['a']);
+        })
+        .extend(['b','c'])
+        .seq(function (a, b, c) {
+            assert.eql(arguments.length, 3);
+            assert.eql([a,b,c], ['a','b','c']);
+            assert.eql(this.stack, ['a','b','c']);
+            this.pass(null);
+        })
+        .pop()
+        .push('c', 'd', 'e')
+        .seq(function (a, b, c, d, e) {
+            assert.eql(arguments.length, 5);
+            assert.eql([a,b,c,d,e], ['a','b','c','d','e']);
+            assert.eql(this.stack, ['a','b','c','d','e']);
+            this.pass(null);
+        })
+        .shift()
+        .shift()
+        .seq(function (c, d, e) {
+            assert.eql(arguments.length, 3);
+            assert.eql([c,d,e], ['c','d','e']);
+            assert.eql(this.stack, ['c','d','e']);
+            this.pass(null);
+        })
+        .set(['a','b'],['c','d',['e']])
+        .flatten()
+        .seq(function (a, b, c, d, e) {
+            assert.eql(arguments.length, 5);
+            assert.eql([a,b,c,d,e], ['a','b','c','d','e']);
+            assert.eql(this.stack, ['a','b','c','d','e']);
+            this.pass(null);
+        })
+        .splice(2, 2)
+        .seq(function (a, b, e) {
+            assert.eql(arguments.length, 3);
+            assert.eql([a,b,e], ['a','b','e']);
+            assert.eql(this.stack, ['a','b','e']);
+            this(null);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            this(null);
         })
     ;
 };

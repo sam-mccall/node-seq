@@ -49,6 +49,13 @@ function builder (saw, xs) {
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
         cb.into = function (k) { key = k; return cb };
+        cb.next = function (err, xs) {
+            context.stack_.push.apply(context.stack_, xs);
+            cb.apply(cb, [err].concat(context.stack));
+        };
+        cb.pass = function (err) {
+            cb.apply(cb, [err].concat(context.stack));
+        };
         f.apply(cb, context.stack);
     }
     
@@ -215,31 +222,22 @@ function builder (saw, xs) {
         });
     };
     
-    this.push = function () {
-        context.stack.push.apply(context.stack, arguments);
-        saw.next();
-    };
+    ['push','pop','shift','unshift','splice']
+        .forEach((function (name) {
+            this[name] = function () {
+                context.stack[name].apply(
+                    context.stack,
+                    [].slice.call(arguments)
+                );
+                saw.next();
+                return this;
+            };
+        }).bind(this))
+    ;
     
     this.extend = function (xs) {
         context.stack.push.apply(context.stack, xs);
         saw.next();
-    };
-    
-    this.splice = function () {
-        var args = [].slice.call(arguments);
-        var cb = args.filter(function (arg) {
-            return typeof arg == 'function'
-        })[0];
-        
-        var xs = context.stack.splice.apply(context.stack, arguments);
-        if (cb) saw.nest(cb, xs, context);
-        else saw.next();
-    };
-    
-    this.shift = function (cb) {
-        var x = context.stack.shift();
-        if (cb) saw.nest(cb, x, context);
-        else saw.next();
     };
     
     this.flatten = function () {
