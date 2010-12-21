@@ -1,7 +1,6 @@
 var EventEmitter = require('events').EventEmitter;
 var Hash = require('traverse/hash');
-//var Chainsaw = require('chainsaw');
-var Chainsaw = require('/home/substack/projects/node-chainsaw');
+var Chainsaw = require('chainsaw');
 
 module.exports = Seq;
 function Seq () {
@@ -27,10 +26,12 @@ function builder (saw, xs) {
     context.stack_ = context.stack;
     
     function action (key, f, g) {
+        var step = saw.step;
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
                 context.error = { message : err, key : key };
+                saw.step = step;
                 saw.down('catch');
             }
             else {
@@ -167,7 +168,6 @@ function builder (saw, xs) {
         
         var active = 0;
         var queue = [];
-        var self = this;
         
         xs.forEach(function call (x, i) {
             if (active >= limit) {
@@ -183,15 +183,12 @@ function builder (saw, xs) {
                         active --;
                         if (queue.length > 0) queue.shift()();
                         else if (active === 0) {
-                            //context.stack = context.stack_.slice();
                             saw.next();
                         }
                     }
                 );
             }
         });
-        
-        context.stack = xs;
     };
     
     this.parMap = function (limit, cb) {
