@@ -336,7 +336,7 @@ exports.parMap = function (assert) {
             setTimeout((function () {
                 running --;
                 this(null, x * 10);
-            }).bind(this), 10);
+            }).bind(this), Math.floor(Math.random() * 100));
         })
         .seq(function () {
             clearTimeout(to);

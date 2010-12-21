@@ -162,11 +162,12 @@ function builder (saw, xs) {
     };
     
     this.parEach = function (limit, cb) {
-        context.stack_ = context.stack.slice();
         var xs = context.stack.slice();
         if (cb === undefined) { cb = limit; limit = xs.length }
+        context.stack_ = [];
         
         var active = 0;
+        var finished = 0;
         var queue = [];
         
         xs.forEach(function call (x, i) {
@@ -181,8 +182,9 @@ function builder (saw, xs) {
                     },
                     function () {
                         active --;
+                        finished ++;
                         if (queue.length > 0) queue.shift()();
-                        else if (active === 0) {
+                        else if (finished === xs.length) {
                             saw.next();
                         }
                     }
@@ -195,15 +197,21 @@ function builder (saw, xs) {
         var res = [];
         var len = context.stack.length;
         if (cb === undefined) { cb = limit; limit = len }
+        var res = [];
         
-        this.parEach(limit, function (x, i) {
-            var self = (function () {
-                res[i] = arguments[1];
-                if (i == len - 1) context.stack = res;
-                this.apply(this, arguments);
-            }).bind(this);
-            cb.apply(self, arguments);
-        });
+        Seq()
+            .extend(context.stack)
+            .parEach(limit, function (x, i) {
+                cb.apply((function () {
+                    res[i] = arguments[1];
+                    this.apply(this, arguments);
+                }).bind(this), arguments);
+            })
+            .seq(function () {
+                context.stack = res;
+                saw.next();
+            })
+        ;
     };
     
     this.seqMap = function (cb) {
