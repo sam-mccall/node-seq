@@ -346,6 +346,24 @@ exports.parMap = function (assert) {
     ;
 };
 
+exports.parMapFast = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 500);
+    
+    var values = [];
+    Seq(1,2,3,4,5,6,7,8,9,10)
+        .parMap(function (x, i) {
+            this(null, x * 10);
+        })
+        .seq(function () {
+            clearTimeout(to);
+            assert.eql(this.stack, [10,20,30,40,50,60,70,80,90,100]);
+            assert.eql(this.stack, [].slice.call(arguments));
+        })
+    ;
+};
+
 exports.seqMap = function (assert) {
     var to = setTimeout(function () {
         assert.fail('never finished');
