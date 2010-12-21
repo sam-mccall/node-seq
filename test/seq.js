@@ -341,6 +341,7 @@ exports.parMap = function (assert) {
         .seq(function () {
             clearTimeout(to);
             assert.eql(this.stack, [10,20,30,40,50,60,70,80,90,100]);
+            assert.eql(this.stack, [].slice.call(arguments));
         })
     ;
 };
