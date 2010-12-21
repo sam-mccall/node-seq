@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
 var Hash = require('traverse/hash');
-var Chainsaw = require('chainsaw');
+//var Chainsaw = require('chainsaw');
+var Chainsaw = require('/home/substack/projects/node-chainsaw');
 
 module.exports = Seq;
 function Seq () {
@@ -48,13 +49,13 @@ function builder (saw, xs) {
             }
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
-        cb.into = function (k) { key = k; return cb };
+        cb.into = function (k) { key = k; return this };
         cb.next = function (err, xs) {
             context.stack_.push.apply(context.stack_, xs);
-            cb.apply(cb, [err].concat(context.stack));
+            this.apply(this, [err].concat(context.stack));
         };
         cb.pass = function (err) {
-            cb.apply(cb, [err].concat(context.stack));
+            this.apply(this, [err].concat(context.stack));
         };
         f.apply(cb, context.stack);
     }
@@ -158,38 +159,32 @@ function builder (saw, xs) {
         var xs = context.stack.slice();
         if (cb === undefined) { cb = limit; limit = xs.length }
         
-        var step = saw.step;
-        saw.nest(function () {
-            var active = 0;
-            var queue = [];
-            
-            xs.forEach((function (x, i) {
-                this.par(function () {
-                    var call = (function () {
-                        active ++;
-                        var self = (function () {
-                            this.apply(this, arguments);
-                            active --;
-                            if (queue.length) queue.shift()();
-                        }).bind(this);
-                        Hash(this).forEach(function (x,k) { self[k] = x });
-                        cb.call(self, x, i);
-                    }).bind(this);
-                    
-                    if (active >= limit) queue.push(call);
-                    else call();
-                });
-            }).bind(this));
-            this.seq(function () {
-                Hash.update(context.vars, this.vars);
-                saw.next();
-            });
-            this.catch(function (err, key) {
-                saw.step = step;
-                context.error = { message : err, key : key };
-                saw.down('catch');
-            });
+        var active = 0;
+        var queue = [];
+        var self = this;
+        
+        xs.forEach(function call (x, i) {
+            if (active >= limit) {
+                queue.push(call.bind(this, x, i));
+            }
+            else {
+                active ++;
+                action(i,
+                    function () {
+                        cb.call(this, x, i);
+                    },
+                    function () {
+                        active --;
+                        if (queue.length > 0) queue.shift()();
+                        else if (active === 0) {
+                            //context.stack = context.stack_.slice();
+                            saw.next();
+                        }
+                    }
+                );
+            }
         });
+        
         context.stack = xs;
     };
     
