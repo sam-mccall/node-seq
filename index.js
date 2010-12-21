@@ -49,13 +49,19 @@ function builder (saw, xs) {
             }
         };
         Hash(context).forEach(function (v,k) { cb[k] = v });
-        cb.into = function (k) { key = k; return this };
+        
+        cb.into = function (k) {
+            key = k;
+            return cb;
+        };
+        
         cb.next = function (err, xs) {
             context.stack_.push.apply(context.stack_, xs);
-            this.apply(this, [err].concat(context.stack));
+            cb.apply(cb, [err].concat(context.stack));
         };
+        
         cb.pass = function (err) {
-            this.apply(this, [err].concat(context.stack));
+            cb.apply(cb, [err].concat(context.stack));
         };
         f.apply(cb, context.stack);
     }
@@ -77,7 +83,10 @@ function builder (saw, xs) {
         }
     };
     
+    var lastPar = null;
     this.par = function (key, cb) {
+        lastPar = saw.step;
+        
         if (running == 0) {
             // empty the active stack for the first par() in a chain
             context.stack_ = [];
@@ -89,7 +98,6 @@ function builder (saw, xs) {
             context.stack_.push(null);
         }
         
-        var step = saw.step;
         running ++;
         
         process.nextTick(function () {
@@ -98,10 +106,8 @@ function builder (saw, xs) {
                 if (running == 0) {
                     context.stack = context.stack_.slice();
                     
-                    saw.step = step;
-                    saw.down(function (x) {
-                        return x.path && x.path[0] != 'par'
-                    });
+                    saw.step = lastPar;
+                    saw.next();
                 }
             });
         });
