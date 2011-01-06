@@ -147,13 +147,13 @@ function builder (saw, xs) {
         this.seq(function () {
             context.stack_ = context.stack.slice();
             var xs = context.stack.slice();
-            
-            (function next (i) {
+            if (xs.length === 0) this(null);
+            else (function next (i) {
                 action(
                     i,
                     function () { cb.call(this, xs[i], i) },
                     function () {
-                        if (i == xs.length - 1) saw.next();
+                        if (i === xs.length - 1) saw.next();
                         else next(i + 1);
                     }
                 );
