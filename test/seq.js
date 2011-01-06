@@ -458,3 +458,18 @@ exports.stack = function (assert) {
         })
     ;
 };
+
+exports.empty = function (assert) {
+    var to = setTimeout(function () {
+        assert.fail('never finished');
+    }, 50);
+    
+    Seq()
+        .seqEach(function (x) {
+            assert.fail('no elements');
+        })
+        .seq(function () {
+            clearTimeout(to);
+        })
+    ;
+};
