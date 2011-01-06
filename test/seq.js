@@ -1,6 +1,7 @@
 var Seq = require('seq');
+var assert = require('assert');
 
-exports.seq = function (assert) {
+exports.seq = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never got to the end of the chain');
     }, 50);
@@ -28,7 +29,7 @@ exports.seq = function (assert) {
     ;
 };
 
-exports.into = function (assert) {
+exports.into = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never got to the end of the chain');
     }, 50);
@@ -48,7 +49,7 @@ exports.into = function (assert) {
 };
  
 
-exports.catchSeq = function (assert) {
+exports.catchSeq = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never caught the error');
     }, 50);
@@ -83,7 +84,7 @@ exports.catchSeq = function (assert) {
     ;
 };
 
-exports.par = function (assert) {
+exports.par = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('seq never fired');
     }, 75);
@@ -115,7 +116,7 @@ exports.par = function (assert) {
     ;
 };
 
-exports.catchPar = function (assert) {
+exports.catchPar = function (beforeExit) {
     var done = false, caught = false;
     var tc = setTimeout(function () {
         assert.fail('error not caught');
@@ -139,7 +140,7 @@ exports.catchPar = function (assert) {
     ;
 };
 
-exports.forEach = function (assert) {
+exports.forEach = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('seq never fired after forEach');
     }, 25);
@@ -158,7 +159,7 @@ exports.forEach = function (assert) {
     ;
 };
 
-exports.seqEach = function (assert) {
+exports.seqEach = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('seqEach never finished');
     }, 25);
@@ -179,7 +180,7 @@ exports.seqEach = function (assert) {
     ;
 };
 
-exports.seqEachCatch = function (assert) {
+exports.seqEachCatch = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never caught the error');
     }, 25);
@@ -209,7 +210,7 @@ exports.seqEachCatch = function (assert) {
     ;
 };
 
-exports.parEach = function (assert) {
+exports.parEach = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 50);
@@ -228,7 +229,7 @@ exports.parEach = function (assert) {
     ;
 };
 
-exports.parEachVars = function (assert) {
+exports.parEachVars = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 70);
@@ -251,7 +252,7 @@ exports.parEachVars = function (assert) {
     ;
 };
 
-exports.parEachInto = function (assert) {
+exports.parEachInto = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 50);
@@ -270,7 +271,7 @@ exports.parEachInto = function (assert) {
     ;
 };
 
-exports.parEachCatch = function (assert) {
+exports.parEachCatch = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 50);
@@ -292,7 +293,7 @@ exports.parEachCatch = function (assert) {
     ;
 };
 
-exports.parEachLimited = function (assert) {
+exports.parEachLimited = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 500);
@@ -320,7 +321,7 @@ exports.parEachLimited = function (assert) {
     ;
 };
 
-exports.parMap = function (assert) {
+exports.parMap = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 500);
@@ -346,7 +347,7 @@ exports.parMap = function (assert) {
     ;
 };
 
-exports.parMapFast = function (assert) {
+exports.parMapFast = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 500);
@@ -364,7 +365,7 @@ exports.parMapFast = function (assert) {
     ;
 };
 
-exports.seqMap = function (assert) {
+exports.seqMap = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 500);
@@ -389,7 +390,7 @@ exports.seqMap = function (assert) {
     ;
 };
 
-exports.stack = function (assert) {
+exports.stack = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 50);
@@ -459,7 +460,7 @@ exports.stack = function (assert) {
     ;
 };
 
-exports.empty = function (assert) {
+exports.empty = function (beforeExit) {
     var to = setTimeout(function () {
         assert.fail('never finished');
     }, 50);
