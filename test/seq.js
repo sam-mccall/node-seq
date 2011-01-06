@@ -47,7 +47,6 @@ exports.into = function (beforeExit) {
         })
     ;
 };
- 
 
 exports.catchSeq = function (beforeExit) {
     var to = setTimeout(function () {
@@ -139,6 +138,56 @@ exports.catchPar = function (beforeExit) {
         })
     ;
 };
+
+exports.catchParWithoutSeq = function (beforeExit) {
+    var done = false, caught = false;
+    var tc = setTimeout(function () {
+        assert.fail('error not caught');
+    }, 75);
+    
+    Seq()
+        .par('one', function () {
+            setTimeout(this.bind({}, 'rawr'), 25);
+        })
+        .par('two', function () {
+            setTimeout(this.bind({}, null, 'y'), 50);
+        })
+        .catch(function (err, key) {
+            clearTimeout(tc);
+            assert.eql(err, 'rawr');
+            assert.eql(key, 'one');
+        })
+    ;    
+}
+
+exports.catchParThenSeq = function (beforeExit) {
+    var tc = setTimeout(function () {
+        assert.fail('error not caught');
+    }, 75);
+    var tf = setTimeout(function () {
+        assert.fail('final seq not run');
+    }, 100);
+    
+    Seq()
+        .par('one', function () {
+            setTimeout(this.bind({}, 'rawr'), 25);
+        })
+        .par('two', function () {
+            setTimeout(this.bind({}, null, 'y'), 50);
+        })
+        .seq(function (x, y) {
+            assert.fail('seq fired with error above');
+	    })
+        .catch(function (err, key) {
+           clearTimeout(tc);
+            assert.eql(err, 'rawr');
+            assert.eql(key, 'one');
+        })
+        .seq(function () {
+            clearTimeout(tf);
+        })
+    ;    
+}
 
 exports.forEach = function (beforeExit) {
     var to = setTimeout(function () {
