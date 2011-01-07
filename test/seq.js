@@ -160,6 +160,30 @@ exports.catchParWithoutSeq = function () {
     ;    
 }
 
+exports.catchParMultipleErrors = function() {
+	var caught={};
+	var finallyRun=0;
+	
+	setTimeout(function() {
+		assert.eql(caught, {one:'rawr1', two:'rawr2'});
+		assert.eql(finallyRun, 1);
+	}, 100);
+	
+	Seq()
+		.par('one', function() {
+        	setTimeout(this.bind({}, 'rawr1'), 25);			
+		})
+		.par('two', function() {
+        	setTimeout(this.bind({}, 'rawr2'), 50);			
+		})
+		.catch(function(err,key) {
+			caught[key]=err;
+		})
+		.seq(function(){
+			finallyRun++;
+		});
+};
+
 exports.catchParThenSeq = function () {
     var tc = setTimeout(function () {
         assert.fail('error not caught');
