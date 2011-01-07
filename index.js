@@ -25,8 +25,7 @@ function builder (saw, xs) {
     };
     context.stack_ = context.stack;
     
-    function action (key, f, g) {
-        var step = saw.step;
+    function action (step, key, f, g) {
         var cb = function (err) {
             var args = [].slice.call(arguments, 1);
             if (err) {
@@ -72,7 +71,7 @@ function builder (saw, xs) {
     this.seq = function (key, cb) {
         if (cb === undefined) { cb = key; key = undefined }
         if (running == 0) {
-            action(key,
+            action(saw.step, key,
                 function () {
                     context.stack_ = [];
                     cb.apply(this, arguments);
@@ -101,8 +100,9 @@ function builder (saw, xs) {
         
         running ++;
         
+        var step = saw.step;
         process.nextTick(function () {
-            action(key, cb, function () {
+            action(step, key, cb, function () {
                 running --;
                 if (running == 0) {
                     context.stack = context.stack_.slice();
@@ -118,7 +118,7 @@ function builder (saw, xs) {
     this.catch = function (cb) {
         if (context.error) {
             context.stack = [ context.error.message, context.error.key ];
-            action(undefined, function () {
+            action(saw.step, undefined, function () {
                 context.stack_ = [];
                 cb.apply(this, arguments);
                 context.stack = context.stack_;
@@ -135,7 +135,7 @@ function builder (saw, xs) {
             context.stack_ = context.stack.slice();
             var end = context.stack.length;
             context.stack.forEach(function (x, i) {
-                action(i, function () {
+                action(saw.step, i, function () {
                     cb.call(this, x, i);
                     if (i == end - 1) saw.next();
                 });
@@ -150,7 +150,7 @@ function builder (saw, xs) {
             if (xs.length === 0) this(null);
             else (function next (i) {
                 action(
-                    i,
+                    saw.step, i,
                     function () { cb.call(this, xs[i], i) },
                     function () {
                         if (i === xs.length - 1) saw.next();
@@ -176,7 +176,7 @@ function builder (saw, xs) {
             }
             else {
                 active ++;
-                action(i,
+                action(saw.step, i,
                     function () {
                         cb.call(this, x, i);
                     },
