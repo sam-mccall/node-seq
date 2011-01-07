@@ -177,9 +177,9 @@ exports.catchParThenSeq = function () {
         })
         .seq(function (x, y) {
             assert.fail('seq fired with error above');
-	    })
+        })
         .catch(function (err, key) {
-           clearTimeout(tc);
+            clearTimeout(tc);
             assert.eql(err, 'rawr');
             assert.eql(key, 'one');
         })

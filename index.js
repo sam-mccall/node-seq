@@ -124,6 +124,7 @@ function builder (saw, xs) {
                 context.stack = context.stack_;
                 
                 context.error = null;
+                running = 0;
                 process.nextTick(saw.next);
             });
         }
